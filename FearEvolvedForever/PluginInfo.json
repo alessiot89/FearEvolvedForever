@@ -1,6 +1,6 @@
 {
     "FullName": "FearEvolvedForever",
-    "Description": "Reimplement Fear Evolved for Scorched Earth.. Kinda...",
-    "Version": 0.1,
+    "Description": "Reimplement Fear Evolved Dodo Wyvern event for Scorched Earth.",
+    "Version": 0.2,
     "MinApiVersion": 3.54
 }

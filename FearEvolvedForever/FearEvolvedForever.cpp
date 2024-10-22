@@ -1,53 +1,159 @@
 #include <API/ARK/Ark.h>
 #pragma comment(lib, "ArkApi.lib")
 
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
 #include <fstream>
 
-// Dawn time in seconds, about 04:30
-constexpr float dawnTime = 16200.0F;
-// Night time in seconds, about 21:50
-constexpr float nightTime = 78600.0F;
-constexpr float midnight = 0.0F;
 
-bool isNight = false;
-bool isEventTime = false;
-bool isEventStarted = false;
-bool isEventEnded = false;
-bool isNightNotified = false;
+namespace
+{
+    // Dawn time in seconds, about 04:30
+    constexpr float dawnTime = 16200.0F;
+    // Night time in seconds, about 21:50
+    constexpr float nightTime = 78600.0F;
+    constexpr float midnight = 0.0F;
 
-// TODO: add location spawn coords.
-TArray<FVector> locations{ { -199600.0F, 161824.0F, 38357.0F } };
+    bool isNight = false;
+    bool isEventTime = false;
+    bool isEventStarted = false;
+    bool isEventEnded = false;
+    bool isNightNotified = false;
 
-APrimalDinoCharacter* dodoWyvern = nullptr;
+    // TODO: add location spawn coords.
+    TArray<FVector> locations{ { -199000.0F, 160000.0F, 38000.0F } };
 
-std::ofstream debugLogFile;
+    APrimalDinoCharacter* dodoWyvern{ nullptr };
+    constexpr int zombiePackSize = 4;
+    TArray <APrimalDinoCharacter*> zombiePack;
+
+    constexpr auto const dodoWyvernBP_str{ "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'" };
+    constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieFire.Wyvern_Character_BP_ZombieFire'" };
+    constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieLightning.Wyvern_Character_BP_ZombieLightning'" };
+    constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
+
+    std::ofstream debugLogFile;
+
+    enum class ZombieType : std::uint8_t
+    {
+        Fire,
+        Lightning,
+        Poison,
+        LastInvalid
+    };
+
+}
 
 void debugLog( const std::string& info )
 {
     debugLogFile << info << std::endl;
 }
 
+// add some locationoffset to the zombie pack.
+void packOffset( FVector& location,
+                 int packIndex )
+{
+    switch( packIndex )
+    {
+    case 0:
+        location.X += 5000.0F;
+        location.Y += 5000.0F;
+        location.Z += 5000.0F;
+        break;
+    case 1:
+        location.X -= 5000.0F;
+        location.Y += 5000.0F;
+        location.Z += 5000.0F;
+        break;
+    case 2:
+        location.X += 5000.0F;
+        location.Y += 5000.0F;
+        location.Z -= 5000.0F;
+        break;
+    case 3:
+        location.X -= 5000.0F;
+        location.Y += 5000.0F;
+        location.Z -= 5000.0F;
+        break;
+    default:
+        debugLog( "WARNING: invalid pack index on pack offset computation! Index was: " + std::to_string(packIndex ) );
+        break;
+    }
+}
+
 APrimalDinoCharacter* spwanDodoWyvern()
 {
-    FString dodoWyvernBP = "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'";
+    FString dodoWyvernBP{ dodoWyvernBP_str };
     UClass* dodoWyvernClass = UVictoryCore::BPLoadClass( &dodoWyvernBP );
     if( !dodoWyvernClass )
     {
-        debugLog( "Cannot load Dodo Wyvern class!" );
+        debugLog( "WARNING: Cannot load Dodo Wyvern class!" );
         return nullptr;
     }
     // TODO: add random location peaker.
-    // TODO: add queen minion pack of high level zombies.
     FRotator rotation{};
     FActorSpawnParameters spawnParams;
-    auto dino = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass, &locations[0], &rotation, &spawnParams ) );
-    if( !dino )
+    auto dodoWyvernChar = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass,
+                                                                                                            &locations[0],
+                                                                                                            &rotation,
+                                                                                                            &spawnParams ) );
+
+    if( !dodoWyvernChar )
     {
-        debugLog( "Cannot spawn Dodo Wyvern!" );
+        debugLog( "WARNING: Cannot spawn Dodo Wyvern!" );
         return nullptr;
     }
-    dino->BeginPlay();
-    return dino;
+    // Add a pack of 4 Zombie Wyverns.
+    // TODO: set higher level pack zombies.
+    std::srand( static_cast<unsigned>( std::time( nullptr ) ) );
+    int packIndex = 0;
+    do
+    {
+        auto randomType = static_cast<ZombieType>( std::rand() + RAND_MAX + 1u / ( static_cast<unsigned>( ZombieType::LastInvalid ) - 1u ) );
+        if( randomType < ZombieType::LastInvalid )
+        {
+            FString zombieBP;
+            switch( randomType )
+            {
+            case ZombieType::Fire:
+                zombieBP = fireZombieBP;
+                debugLog( "INFO: a Zombie Fire Wyvern will spawn in the pack" );
+                break;
+            case ZombieType::Lightning:
+                zombieBP = lightningZombieBP;
+                debugLog( "INFO: a Zombie Lightning Wyvern will spawn in the pack" );
+                break;
+            case ZombieType::Poison:
+                zombieBP = poisonZombieBP;
+                debugLog( "INFO: a Zombie Poison Wyvern will spawn in the pack" );
+                break;
+            }
+            UClass* zombieClass = UVictoryCore::BPLoadClass( &zombieBP );
+            if( !zombieClass )
+            {
+                debugLog( "WARNING: Cannot load Zombie Wyvern being " + zombieBP.ToString() );
+                return nullptr;
+            }
+            packOffset( locations[0],
+                        packIndex );
+            zombiePack[packIndex] = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( zombieClass,
+                                                                                                                      &locations[0],
+                                                                                                                      &rotation,
+                                                                                                                      &spawnParams ) );
+            if( !zombiePack[packIndex] )
+            {
+                debugLog( "WARNING: Cannot spawn Zombie Wyvern being " + zombieBP.ToString() );
+                return dodoWyvernChar;
+            }
+            debugLog( "INFO: spawned a Zombie Wyvern of the above type." );
+            zombiePack[packIndex]->BeginPlay();
+            ++packIndex;
+        }
+    }
+    while( packIndex < zombiePackSize );
+    dodoWyvernChar->BeginPlay();
+    return dodoWyvernChar;
 }
 
 /*
@@ -128,18 +234,31 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
             // Dodo Wyvern was not slayed, must be removed from map (as well it's guard pack).
             {
                 auto ptr = GetWeakReference( dodoWyvern );
-                //auto ptr = GetWeakReference( dodoWyvern.Get() );
                 if( nullptr == ptr )
                 {
                     debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "Night time ended, Dodo Wyvern not slayed but cannot find it!" );
+                    debugLog( "WARNING: Night time ended, Dodo Wyvern not slayed but cannot find it! If the plugin just loaded, don't panic, it's OK" );
                 }
                 else
                 {
                     debugLog( "Time: " + dbgTimeStr );
                     debugLog( "Night time ended, Dodo Wyvern fleed away!" );
                     dodoWyvern->Destroy( false, true );
-                    debugLog( "Destroy called" );
+                    debugLog( "Destroy called on Dodo Wyvern" );
+                }
+                for( int i = 0; i < zombiePack.Num(); ++i )
+                {
+                    auto zombiePtr = GetWeakReference( zombiePack[i] );
+                    if( nullptr == zombiePtr )
+                    {
+                        std::string info = "No zombie found for zombie pack #" + std::to_string( i );
+                        debugLog( info );
+                    }
+                    else
+                    {
+                        zombiePtr->Destroy( false, true );
+                        debugLog( "Destroy called for zombie pack #" + std::to_string( i ) );
+                    }
                 }
             }
         }
@@ -147,12 +266,15 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
         isEventEnded = true;
         isNightNotified = false;
     }
-    return( AShooterGameState_Tick_original( gameState, deltaSeconds ) );
+    return( AShooterGameState_Tick_original( gameState,
+                                             deltaSeconds ) );
 }
 
 void load()
 {
     Log::Get().Init( "Fear Evolved Forever" );
+    zombiePack.Init( nullptr,
+                     zombiePackSize );
     auto& hooks = ArkApi::GetHooks();
     hooks.SetHook( "AShooterGameState.Tick",
                    &hook_AShooterGameState_Tick,
@@ -172,9 +294,9 @@ BOOL APIENTRY DllMain( HINSTANCE /*hinstDLL*/,
     switch( fdwReason )
     {
     case DLL_PROCESS_ATTACH:
-        debugLogFile.open( "debugLog.txt", std::ios::app );
+        debugLogFile.open( "_FearEvolved_forever_debugLog.txt", std::ios::app );
         debugLog( "================================================================================" );
-        debugLog( "Plugin loading" );
+        debugLog( "Fear Evolved Forever Plugin loaded" );
         debugLog( "================================================================================" );
         load();
         break;
