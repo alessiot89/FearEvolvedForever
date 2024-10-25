@@ -156,24 +156,24 @@ APrimalDinoCharacter* spwanDodoWyvern()
             }
             packOffset( *location,
                         packIndex );
-            zombiePack[packIndex] = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( zombieClass,
-                                                                                                                      location,
-                                                                                                                      &rotation,
-                                                                                                                      &spawnParams ) );
-            //TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
-            //zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
-            //                                                         subclass,
-            //                                                         *location,
-            //                                                         rotation,
-            //                                                         5.0F,
-            //                                                         38,
-            //                                                         false,
-            //                                                         true,
-            //                                                         0,
-            //                                                         false,
-            //                                                         1.0F,
-            //                                                         0,
-            //                                                         false );
+            //zombiePack[packIndex] = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( zombieClass,
+            //                                                                                                          location,
+            //                                                                                                          &rotation,
+            //                                                                                                          &spawnParams ) );
+            TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
+            zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
+                                                                     subclass,
+                                                                     *location,
+                                                                     rotation,
+                                                                     5.0F,
+                                                                     38,
+                                                                     false,
+                                                                     true,
+                                                                     0,
+                                                                     false,
+                                                                     1.0F,
+                                                                     0,
+                                                                     false );
             if( !zombiePack[packIndex] )
             {
                 debugLog( "WARNING: Cannot spawn Zombie Wyvern being " + zombieBP.ToString() );
