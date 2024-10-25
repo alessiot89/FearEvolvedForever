@@ -5,49 +5,67 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <string>
 
 
-namespace
+// Dawn time in seconds, about 04:30
+constexpr float dawnTime = 16200.0F;
+// Night time in seconds, about 21:50
+constexpr float nightTime = 78600.0F;
+constexpr float midnight = 0.0F;
+
+bool isNight = false;
+bool isEventTime = false;
+bool isEventStarted = false;
+bool isEventEnded = false;
+bool isNightNotified = false;
+
+// TODO: add location spawn coords.
+TArray<FVector> locations{ { -199000.0F, 160000.0F, 38000.0F },
+                           { -243000.0F, 177000.0F, -4900.0F } };
+
+APrimalDinoCharacter* dodoWyvern{ nullptr };
+constexpr int zombiePackSize = 4;
+TArray <APrimalDinoCharacter*> zombiePack;
+
+constexpr auto const dodoWyvernBP_str{ "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'" };
+constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieFire.Wyvern_Character_BP_ZombieFire'" };
+constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieLightning.Wyvern_Character_BP_ZombieLightning'" };
+constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
+
+std::ofstream debugLogFile;
+
+enum class ZombieType : std::uint8_t
 {
-    // Dawn time in seconds, about 04:30
-    constexpr float dawnTime = 16200.0F;
-    // Night time in seconds, about 21:50
-    constexpr float nightTime = 78600.0F;
-    constexpr float midnight = 0.0F;
-
-    bool isNight = false;
-    bool isEventTime = false;
-    bool isEventStarted = false;
-    bool isEventEnded = false;
-    bool isNightNotified = false;
-
-    // TODO: add location spawn coords.
-    TArray<FVector> locations{ { -199000.0F, 160000.0F, 38000.0F } };
-
-    APrimalDinoCharacter* dodoWyvern{ nullptr };
-    constexpr int zombiePackSize = 4;
-    TArray <APrimalDinoCharacter*> zombiePack;
-
-    constexpr auto const dodoWyvernBP_str{ "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'" };
-    constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieFire.Wyvern_Character_BP_ZombieFire'" };
-    constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieLightning.Wyvern_Character_BP_ZombieLightning'" };
-    constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
-
-    std::ofstream debugLogFile;
-
-    enum class ZombieType : std::uint8_t
-    {
-        Fire,
-        Lightning,
-        Poison,
-        LastInvalid
-    };
-
-}
+    Fire,
+    Lightning,
+    Poison,
+    LastInvalid
+};
 
 void debugLog( const std::string& info )
 {
     debugLogFile << info << std::endl;
+}
+
+FVector* pickLocation()
+{
+    do
+    {
+        auto randomIndex = static_cast<std::uint8_t>( std::rand() + RAND_MAX + 1u / ( static_cast<unsigned>( locations.Num() ) - 1u ) );
+        if( randomIndex < locations.Num() )
+        {
+            std::string info{ "INFO: picked location at index " };
+            info += std::to_string( randomIndex );
+            info += " having coords:";
+            info += " " + std::to_string( locations[randomIndex].X );
+            info += " " + std::to_string( locations[randomIndex].Y );
+            info += " " + std::to_string( locations[randomIndex].Z );
+            debugLog( info );
+            return &locations[randomIndex];
+        }
+    }
+    while( true );
 }
 
 // add some locationoffset to the zombie pack.
@@ -77,7 +95,7 @@ void packOffset( FVector& location,
         location.Z -= 5000.0F;
         break;
     default:
-        debugLog( "WARNING: invalid pack index on pack offset computation! Index was: " + std::to_string(packIndex ) );
+        debugLog( "WARNING: invalid pack index on pack offset computation! Index was: " + std::to_string( packIndex ) );
         break;
     }
 }
@@ -94,8 +112,9 @@ APrimalDinoCharacter* spwanDodoWyvern()
     // TODO: add random location peaker.
     FRotator rotation{};
     FActorSpawnParameters spawnParams;
+    FVector* location = pickLocation();
     auto dodoWyvernChar = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass,
-                                                                                                            &locations[0],
+                                                                                                            location,
                                                                                                             &rotation,
                                                                                                             &spawnParams ) );
 
@@ -135,12 +154,26 @@ APrimalDinoCharacter* spwanDodoWyvern()
                 debugLog( "WARNING: Cannot load Zombie Wyvern being " + zombieBP.ToString() );
                 return nullptr;
             }
-            packOffset( locations[0],
+            packOffset( *location,
                         packIndex );
             zombiePack[packIndex] = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( zombieClass,
-                                                                                                                      &locations[0],
+                                                                                                                      location,
                                                                                                                       &rotation,
                                                                                                                       &spawnParams ) );
+            //TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
+            //zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
+            //                                                         subclass,
+            //                                                         *location,
+            //                                                         rotation,
+            //                                                         5.0F,
+            //                                                         38,
+            //                                                         false,
+            //                                                         true,
+            //                                                         0,
+            //                                                         false,
+            //                                                         1.0F,
+            //                                                         0,
+            //                                                         false );
             if( !zombiePack[packIndex] )
             {
                 debugLog( "WARNING: Cannot spawn Zombie Wyvern being " + zombieBP.ToString() );
