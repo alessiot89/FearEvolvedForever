@@ -52,7 +52,7 @@ FVector* pickLocation()
 {
     do
     {
-        auto randomIndex = static_cast<std::uint8_t>( std::rand() + RAND_MAX + 1u / ( static_cast<unsigned>( locations.Num() ) - 1u ) );
+        auto randomIndex = static_cast<std::uint8_t>( std::rand() / ( ( RAND_MAX + 1u ) / ( static_cast<unsigned>( locations.Num() ) - 1u ) ) );
         if( randomIndex < locations.Num() )
         {
             std::string info{ "INFO: picked location at index " };
@@ -129,7 +129,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
     int packIndex = 0;
     do
     {
-        auto randomType = static_cast<ZombieType>( std::rand() + RAND_MAX + 1u / ( static_cast<unsigned>( ZombieType::LastInvalid ) - 1u ) );
+        auto randomType = static_cast<ZombieType>( std::rand() / ( ( RAND_MAX + 1u ) / ( static_cast<unsigned>( ZombieType::LastInvalid ) - 1u ) ) );
         if( randomType < ZombieType::LastInvalid )
         {
             FString zombieBP;
