@@ -23,7 +23,7 @@
     <None Include="PluginInfo.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="config.json">
+    <None Include="Config.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

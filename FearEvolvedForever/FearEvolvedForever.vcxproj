@@ -144,14 +144,15 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(ProjectDir)\PluginInfo.json $(OutDir)</Command>
+      <Command>copy $(ProjectDir)\PluginInfo.json $(OutDir)
+copy $(ProjectDir)\Config.json $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FearEvolvedForever.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.json" />
+    <None Include="Config.json" />
     <None Include="PluginInfo.json" />
   </ItemGroup>
   <ItemGroup>
