@@ -149,7 +149,9 @@ copy $(ProjectDir)\Config.json $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FearEvolvedForever.cpp" />
+    <ClCompile Include="FearEvolvedForever.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level4</WarningLevel>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Config.json" />

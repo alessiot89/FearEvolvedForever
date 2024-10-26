@@ -1,4 +1,6 @@
+#pragma warning(push, 3)
 #include <API/ARK/Ark.h>
+#pragma warning(pop)
 #pragma comment(lib, "ArkApi.lib")
 
 #include <cstdint>
@@ -63,7 +65,6 @@ enum class ZombieType : std::uint8_t
 void initLocations()
 {
     auto placements = config["Placements"];
-    auto placementCount = placements.size();
     for( auto& entry : placements )
     {
         spawnCoords.Add( { FVector( entry["x"],
@@ -80,7 +81,6 @@ void initColors()
     try
     {
         auto eventColors = config["EventColors"];
-        auto eventColorsCount = eventColors.size();
         for( auto& entry : eventColors )
         {
             packEventColorsSet.Add( entry );
@@ -96,7 +96,6 @@ void initColors()
     try
     {
         auto specialColors = config["SpecialColors"];
-        auto specialColorsCount = specialColors.size();
         for( auto& entry : specialColors )
         {
             packSpecialColorsSet.Add( entry );
@@ -227,7 +226,6 @@ APrimalDinoCharacter* spwanDodoWyvern()
         return nullptr;
     }
     FActorSpawnParameters spawnParams;
-    auto randomLocationIdx = getRandomValue( spawnCoords.Num() );
     FVector* location{};
     FRotator* rotation{};
     pickSpawn( location, rotation );
@@ -426,7 +424,8 @@ void ReadConfig()
     float specialChance = std::numeric_limits<float>::infinity();
     try
     {
-        float colorChance = config["EventColorsChance"];
+        colorChance = config["EventColorsChance"];
+        debugLog( std::to_string( colorChance ) );
         if( colorChance >= 1.0F )
         {
             colorChance = 1.0F;
@@ -435,7 +434,8 @@ void ReadConfig()
         {
             colorChance = 0.0F;
         }
-        float specialChance = config["SpecialColorsChance"];
+        specialChance = config["SpecialColorsChance"];
+        debugLog( std::to_string( specialChance ) );
         if( specialChance >= 1.0F )
         {
             specialChance = 1.0F;
@@ -447,7 +447,7 @@ void ReadConfig()
         }
         if( ( colorChance + specialChance ) > 1.0F )
         {
-            // let's keep the biggest value, and clamp the smaller.
+            debugLog( "Summed color chance values greater than 1.0! Let's keep the biggest value, and clamp the smaller" );
             colorChance >= specialChance
                 ? specialChance = 1.0F - ( colorChance + specialChance )
                 : colorChance = 1.0F - ( colorChance + specialChance );
