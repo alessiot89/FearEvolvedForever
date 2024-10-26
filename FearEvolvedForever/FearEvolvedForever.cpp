@@ -180,8 +180,13 @@ APrimalDinoCharacter* spwanDodoWyvern()
                 return dodoWyvernChar;
             }
             debugLog( "INFO: spawned a Zombie Wyvern of the above type." );
-            //zombiePack[packIndex]->SetupColorization();
             zombiePack[packIndex]->BeginPlay();
+            zombiePack[packIndex]->ForceUpdateColorSets( 0, 79 );
+            zombiePack[packIndex]->ForceUpdateColorSets( 1, 79 );
+            zombiePack[packIndex]->ForceUpdateColorSets( 2, 79 );
+            zombiePack[packIndex]->ForceUpdateColorSets( 3, 79 );
+            zombiePack[packIndex]->ForceUpdateColorSets( 4, 79 );
+            zombiePack[packIndex]->ForceUpdateColorSets( 5, 79 );
             ++packIndex;
         }
     }
