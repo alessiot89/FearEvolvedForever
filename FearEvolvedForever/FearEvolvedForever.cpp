@@ -130,7 +130,8 @@ T getRandomValue( T outerLimit )
     return getRandomValue( static_cast<T>( 0 ), outerLimit );
 }
 
-void pickSpawn( FVector* position, FRotator* rotation )
+void pickSpawn( FVector*& position,
+                FRotator*& rotation )
 {
     auto randomIndex = getRandomValue( spawnCoords.Num() );
     position = &spawnCoords[randomIndex].first;
@@ -289,7 +290,6 @@ APrimalDinoCharacter* spwanDodoWyvern()
         }
         debugLog( "INFO: spawned a Zombie Wyvern of the above type of level " + std::to_string( level * 5 ) );
         zombiePack[packIndex]->BeginPlay();
-
     }
     dodoWyvernChar->BeginPlay();
     return dodoWyvernChar;
@@ -425,7 +425,7 @@ void ReadConfig()
     try
     {
         colorChance = config["EventColorsChance"];
-        debugLog( std::to_string( colorChance ) );
+        debugLog( "Json EventColorsChance: " + std::to_string( colorChance ) );
         if( colorChance >= 1.0F )
         {
             colorChance = 1.0F;
@@ -435,7 +435,7 @@ void ReadConfig()
             colorChance = 0.0F;
         }
         specialChance = config["SpecialColorsChance"];
-        debugLog( std::to_string( specialChance ) );
+        debugLog( "Json SpecialColorsChance: " + std::to_string( specialChance ) );
         if( specialChance >= 1.0F )
         {
             specialChance = 1.0F;
