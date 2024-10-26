@@ -290,6 +290,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
         }
         debugLog( "INFO: spawned a Zombie Wyvern of the above type of level " + std::to_string( level * 5 ) );
         zombiePack[packIndex]->BeginPlay();
+        paintZombie( zombiePack[packIndex] );
     }
     dodoWyvernChar->BeginPlay();
     return dodoWyvernChar;
