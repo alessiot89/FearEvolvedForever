@@ -1,4 +1,5 @@
 {
+    "EventColorsChance": 0.75,
     "EventColors": [
         8,
         9,
@@ -18,6 +19,7 @@
         85,
         89
     ],
+    "SpecialColorsChance": 0.3,
     "SpecialColors": [
         1,
         2,

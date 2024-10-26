@@ -5,7 +5,12 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <limits>
 #include <string>
+
+#include "json.hpp"
+
+nlohmann::json config;
 
 
 // Dawn time in seconds, about 04:30 ingame
@@ -20,13 +25,20 @@ bool isEventStarted = false;
 bool isEventEnded = false;
 bool isNightNotified = false;
 
-// TODO: add location spawn coords.
-TArray<FVector> locations{ { -199000.0F, 160000.0F, 38000.0F },
-                           { -243000.0F, 177000.0F, -4900.0F } };
+float paintingChance = 0.5F;
+float paintingSpecialChance = 0.15F;
+
+
+// Dodo Wyvern spawns coords (position and rotation vectors).
+TArray<std::pair<FVector, FRotator>> spawnCoords{};
+
+TArray<int> packEventColorsSet{};
+TArray<int> packSpecialColorsSet{};
+
 
 APrimalDinoCharacter* dodoWyvern{ nullptr };
 constexpr int zombiePackSize = 4;
-TArray <APrimalDinoCharacter*> zombiePack;
+TArray<APrimalDinoCharacter*> zombiePack;
 
 constexpr auto const dodoWyvernBP_str{ "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'" };
 constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieFire.Wyvern_Character_BP_ZombieFire'" };
@@ -34,6 +46,11 @@ constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyv
 constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
 
 std::ofstream debugLogFile;
+
+void debugLog( const std::string& info )
+{
+    debugLogFile << info << std::endl;
+}
 
 enum class ZombieType : std::uint8_t
 {
@@ -43,9 +60,54 @@ enum class ZombieType : std::uint8_t
     LastInvalid // Used for outer limit
 };
 
-void debugLog( const std::string& info )
+void initLocations()
 {
-    debugLogFile << info << std::endl;
+    auto placements = config["Placements"];
+    auto placementCount = placements.size();
+    for( auto& entry : placements )
+    {
+        spawnCoords.Add( { FVector( entry["x"],
+                                    entry["y"],
+                                    entry["z"] ),
+                         FRotator( 0.0F,
+                                   entry["yaw"],
+                                   0.0F ) } );
+    }
+}
+
+void initColors()
+{
+    try
+    {
+        auto eventColors = config["EventColors"];
+        auto eventColorsCount = eventColors.size();
+        for( auto& entry : eventColors )
+        {
+            packEventColorsSet.Add( entry );
+        }
+    }
+    catch( const std::exception& )
+    {
+        debugLog( "Failed to read event colors, default to 0 (no colors)" );
+        packEventColorsSet.Empty();
+        packEventColorsSet.Add( 0 );
+    }
+
+    try
+    {
+        auto specialColors = config["SpecialColors"];
+        auto specialColorsCount = specialColors.size();
+        for( auto& entry : specialColors )
+        {
+            packSpecialColorsSet.Add( entry );
+        }
+    }
+    catch( const std::exception& )
+    {
+        debugLog( "Failed to read special colors, default to 0 (no colors)" );
+        packEventColorsSet.Empty();
+        packEventColorsSet.Add( 0 );
+    }
 }
 
 template<typename T>
@@ -53,7 +115,7 @@ T getRandomValue( T minValue, T outerLimit )
 {
     do
     {
-        // If you don't like this, go and use any (slower) engine of <random>
+        // If you don't like this for science, go and use any (slower) engine of <random>!
         auto value = static_cast<T>( std::rand() / ( ( RAND_MAX + 1u ) / static_cast<unsigned>( outerLimit ) ) );
         if( value >= minValue && value < outerLimit )
         {
@@ -69,17 +131,58 @@ T getRandomValue( T outerLimit )
     return getRandomValue( static_cast<T>( 0 ), outerLimit );
 }
 
-FVector* pickLocation()
+void pickSpawn( FVector* position, FRotator* rotation )
 {
-    auto randomIndex = getRandomValue( locations.Num() );
+    auto randomIndex = getRandomValue( spawnCoords.Num() );
+    position = &spawnCoords[randomIndex].first;
+    rotation = &spawnCoords[randomIndex].second;
     std::string info{ "INFO: picked location at index " };
     info += std::to_string( randomIndex );
     info += " having coords:";
-    info += " " + std::to_string( locations[randomIndex].X );
-    info += " " + std::to_string( locations[randomIndex].Y );
-    info += " " + std::to_string( locations[randomIndex].Z );
+    info += " " + std::to_string( spawnCoords[randomIndex].first.X );
+    info += " " + std::to_string( spawnCoords[randomIndex].first.Y );
+    info += " " + std::to_string( spawnCoords[randomIndex].first.Z );
     debugLog( info );
-    return &locations[randomIndex];
+}
+
+void paintZombie( APrimalDinoCharacter* zombie )
+{
+    constexpr auto bigEnough = 10000;
+    int extraction = getRandomValue( 1, 10000 );
+
+    // 1.0 : 10000 = paintingChance : x
+    auto paintingChanceLimit = static_cast<int>( bigEnough * paintingChance );
+    // 1.0 : 10000 = paintingSpecialChance : x
+    auto paintingSpecialChanceLimit = static_cast<int>( bigEnough * paintingSpecialChance );
+    paintingSpecialChanceLimit += paintingChanceLimit;
+
+    // Zombie painting chance: [0, paintingChanceLimit]
+    // Zomie special painting chance: [paintingChanceLimit+1, paintingSpecialChanceLimit]
+    // No painting: (paintingSpecialChanceLimit, bigEnough]
+
+    TArray<int> colorSet;
+    colorSet.Init( 6, 0 );
+
+    if( extraction <= paintingChanceLimit )
+    {
+        debugLog( "Zombie will have event painting!" );
+        for( int i{}; i < 6; ++i )
+        {
+            zombie->ForceUpdateColorSets( i, getRandomValue( packEventColorsSet.Num() ) );
+        }
+    }
+    else if( extraction <= paintingSpecialChanceLimit )
+    {
+        debugLog( "Zombie will have special painting!" );
+        for( int i{}; i < colorSet.Num(); ++i )
+        {
+            zombie->ForceUpdateColorSets( i, getRandomValue( packSpecialColorsSet.Num() ) );
+        }
+    }
+    else
+    {
+        debugLog( "Zombie will not have any painting at all!" );
+    }
 }
 
 // add some locationoffset to the zombie pack.
@@ -123,15 +226,15 @@ APrimalDinoCharacter* spwanDodoWyvern()
         debugLog( "WARNING: Cannot load Dodo Wyvern class!" );
         return nullptr;
     }
-    // TODO: add random location peaker.
-    FRotator rotation{};
     FActorSpawnParameters spawnParams;
-    FVector* location = pickLocation();
+    auto randomLocationIdx = getRandomValue( spawnCoords.Num() );
+    FVector* location{};
+    FRotator* rotation{};
+    pickSpawn( location, rotation );
     auto dodoWyvernChar = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass,
                                                                                                             location,
-                                                                                                            &rotation,
+                                                                                                            rotation,
                                                                                                             &spawnParams ) );
-
     if( !dodoWyvernChar )
     {
         debugLog( "WARNING: Cannot spawn Dodo Wyvern!" );
@@ -171,7 +274,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
         zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
                                                                  subclass,
                                                                  *location,
-                                                                 rotation,
+                                                                 *rotation,
                                                                  5.0F,
                                                                  level,
                                                                  false,
@@ -188,12 +291,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
         }
         debugLog( "INFO: spawned a Zombie Wyvern of the above type of level " + std::to_string( level * 5 ) );
         zombiePack[packIndex]->BeginPlay();
-        zombiePack[packIndex]->ForceUpdateColorSets( 0, 79 );
-        zombiePack[packIndex]->ForceUpdateColorSets( 1, 79 );
-        zombiePack[packIndex]->ForceUpdateColorSets( 2, 79 );
-        zombiePack[packIndex]->ForceUpdateColorSets( 3, 79 );
-        zombiePack[packIndex]->ForceUpdateColorSets( 4, 79 );
-        zombiePack[packIndex]->ForceUpdateColorSets( 5, 79 );
+
     }
     dodoWyvernChar->BeginPlay();
     return dodoWyvernChar;
@@ -263,6 +361,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 {
                     debugLog( "Time: " + dbgTimeStr );
                     debugLog( "DodoWwyvern has been slayed!" );
+                    // TODO: send message in chat about the Dodo Wyvern appeared!
                     isEventEnded = true;
                 }
             }
@@ -280,14 +379,15 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 if( nullptr == ptr )
                 {
                     debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "WARNING: Night time ended, Dodo Wyvern not slayed but cannot find it! If the plugin just loaded, don't panic, it's OK" );
+                    debugLog( "WARNING: Night time ended, Dodo Wyvern not slayed and cannot find it! If the plugin just loaded, don't panic, it's OK" );
                 }
                 else
                 {
                     debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "Night time ended, Dodo Wyvern fleed away!" );
+                    debugLog( "Night time ended, Dodo Wyvern fled away!" );
                     dodoWyvern->Destroy( false, true );
                     debugLog( "Destroy called on Dodo Wyvern" );
+                    // TODO: send message in chat about the Dodo Wyvern fled away!
                 }
                 for( int i = 0; i < zombiePack.Num(); ++i )
                 {
@@ -313,16 +413,95 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                                              deltaSeconds ) );
 }
 
+void ReadConfig()
+{
+    const std::string config_path = ArkApi::Tools::GetCurrentDir() + "/ArkApi/Plugins/FearEvolvedForever/Config.json";
+    std::ifstream file{ config_path };
+    if( !file.is_open() )
+    {
+        throw std::runtime_error( "Can't open Config.json" );
+    }
+    file >> config;
+    float colorChance = std::numeric_limits<float>::infinity();
+    float specialChance = std::numeric_limits<float>::infinity();
+    try
+    {
+        float colorChance = config["EventColorsChance"];
+        if( colorChance >= 1.0F )
+        {
+            colorChance = 1.0F;
+        }
+        else if( colorChance < 0.0F )
+        {
+            colorChance = 0.0F;
+        }
+        float specialChance = config["SpecialColorsChance"];
+        if( specialChance >= 1.0F )
+        {
+            specialChance = 1.0F;
+            colorChance = 0.0F;
+        }
+        else if( specialChance < 0.0F )
+        {
+            specialChance = 0.0F;
+        }
+        if( ( colorChance + specialChance ) > 1.0F )
+        {
+            // let's keep the biggest value, and clamp the smaller.
+            colorChance >= specialChance
+                ? specialChance = 1.0F - ( colorChance + specialChance )
+                : colorChance = 1.0F - ( colorChance + specialChance );
+        }
+    }
+    catch( const std::exception& )
+    {
+        debugLog( "Invalid color chance values, reverting to default (0.5 for EventColorsChance and 0.15 for SpecialColorsChance)" );
+    }
+    if( colorChance != std::numeric_limits<float>::infinity() )
+    {
+        paintingChance = colorChance;
+        debugLog( "Zombie pack color spawn override chance set to " + std::to_string( paintingChance ) );
+    }
+    else
+    {
+        debugLog( "Invalid Zombie pack color spawn override chance, reverting to " + std::to_string( paintingChance ) );
+    }
+    if( specialChance != std::numeric_limits<float>::infinity() )
+    {
+        paintingSpecialChance = specialChance;
+        debugLog( "Zombie pack color spawn override chance set to " + std::to_string( paintingSpecialChance ) );
+    }
+    else
+    {
+        debugLog( "Invalid Zombie pack color spawn override chance, reverting to " + std::to_string( paintingSpecialChance ) );
+    }
+    file.close();
+}
+
+
 void load()
 {
     Log::Get().Init( "Fear Evolved Forever" );
+
+    try
+    {
+        ReadConfig();
+        initColors();
+        initLocations();
+    }
+    catch( const std::exception& error )
+    {
+        Log::GetLog()->error( error.what() );
+        throw error;
+    }
+
     std::srand( static_cast<unsigned>( std::time( nullptr ) ) );
     zombiePack.Init( nullptr,
                      zombiePackSize );
-    auto& hooks = ArkApi::GetHooks();
-    hooks.SetHook( "AShooterGameState.Tick",
-                   &hook_AShooterGameState_Tick,
-                   &AShooterGameState_Tick_original );
+
+    ArkApi::GetHooks().SetHook( "AShooterGameState.Tick",
+                                &hook_AShooterGameState_Tick,
+                                &AShooterGameState_Tick_original );
 }
 
 void unload()
@@ -333,7 +512,7 @@ void unload()
 
 BOOL APIENTRY DllMain( HINSTANCE /*hinstDLL*/,
                        DWORD fdwReason,
-                       LPVOID /*lpvReserved*/ )
+                       LPVOID /*reserved*/ )
 {
     switch( fdwReason )
     {
