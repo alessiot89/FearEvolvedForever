@@ -8,9 +8,9 @@
 #include <string>
 
 
-// Dawn time in seconds, about 04:30
+// Dawn time in seconds, about 04:30 ingame
 constexpr float dawnTime = 16200.0F;
-// Night time in seconds, about 21:50
+// Night start time in seconds, about 21:50 ingame
 constexpr float nightTime = 78600.0F;
 constexpr float midnight = 0.0F;
 
@@ -40,7 +40,7 @@ enum class ZombieType : std::uint8_t
     Fire,
     Lightning,
     Poison,
-    LastInvalid
+    LastInvalid // Used for outer limit
 };
 
 void debugLog( const std::string& info )
@@ -48,24 +48,38 @@ void debugLog( const std::string& info )
     debugLogFile << info << std::endl;
 }
 
-FVector* pickLocation()
+template<typename T>
+T getRandomValue( T minValue, T outerLimit )
 {
     do
     {
-        auto randomIndex = static_cast<std::uint8_t>( std::rand() / ( ( RAND_MAX + 1u ) / static_cast<unsigned>( locations.Num() ) ) );
-        if( randomIndex < locations.Num() )
+        // If you don't like this, go and use any (slower) engine of <random>
+        auto value = static_cast<T>( std::rand() / ( ( RAND_MAX + 1u ) / static_cast<unsigned>( outerLimit ) ) );
+        if( value >= minValue && value < outerLimit )
         {
-            std::string info{ "INFO: picked location at index " };
-            info += std::to_string( randomIndex );
-            info += " having coords:";
-            info += " " + std::to_string( locations[randomIndex].X );
-            info += " " + std::to_string( locations[randomIndex].Y );
-            info += " " + std::to_string( locations[randomIndex].Z );
-            debugLog( info );
-            return &locations[randomIndex];
+            return value;
         }
     }
     while( true );
+}
+
+template<typename T>
+T getRandomValue( T outerLimit )
+{
+    return getRandomValue( static_cast<T>( 0 ), outerLimit );
+}
+
+FVector* pickLocation()
+{
+    auto randomIndex = getRandomValue( locations.Num() );
+    std::string info{ "INFO: picked location at index " };
+    info += std::to_string( randomIndex );
+    info += " having coords:";
+    info += " " + std::to_string( locations[randomIndex].X );
+    info += " " + std::to_string( locations[randomIndex].Y );
+    info += " " + std::to_string( locations[randomIndex].Z );
+    debugLog( info );
+    return &locations[randomIndex];
 }
 
 // add some locationoffset to the zombie pack.
@@ -123,74 +137,64 @@ APrimalDinoCharacter* spwanDodoWyvern()
         debugLog( "WARNING: Cannot spawn Dodo Wyvern!" );
         return nullptr;
     }
-    // Add a pack of 4 Zombie Wyverns.
-    // TODO: set higher level pack zombies.
-    std::srand( static_cast<unsigned>( std::time( nullptr ) ) );
-    int packIndex = 0;
-    do
+    // Spawn the 4 zombie wyvern pack around Dodo Wyvern.
+    for( int packIndex = 0; packIndex < zombiePackSize; ++packIndex )
     {
-        auto randomType = static_cast<ZombieType>( std::rand() / ( ( RAND_MAX + 1u ) / static_cast<unsigned>( ZombieType::LastInvalid ) ) );
-        if( randomType < ZombieType::LastInvalid )
+        auto randomType = getRandomValue( ZombieType::LastInvalid );
+        FString zombieBP;
+        switch( randomType )
         {
-            FString zombieBP;
-            switch( randomType )
-            {
-            case ZombieType::Fire:
-                zombieBP = fireZombieBP;
-                debugLog( "INFO: a Zombie Fire Wyvern will spawn in the pack" );
-                break;
-            case ZombieType::Lightning:
-                zombieBP = lightningZombieBP;
-                debugLog( "INFO: a Zombie Lightning Wyvern will spawn in the pack" );
-                break;
-            case ZombieType::Poison:
-                zombieBP = poisonZombieBP;
-                debugLog( "INFO: a Zombie Poison Wyvern will spawn in the pack" );
-                break;
-            }
-            UClass* zombieClass = UVictoryCore::BPLoadClass( &zombieBP );
-            if( !zombieClass )
-            {
-                debugLog( "WARNING: Cannot load Zombie Wyvern being " + zombieBP.ToString() );
-                return nullptr;
-            }
-            packOffset( *location,
-                        packIndex );
-            //zombiePack[packIndex] = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( zombieClass,
-            //                                                                                                          location,
-            //                                                                                                          &rotation,
-            //                                                                                                          &spawnParams ) );
-            TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
-            zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
-                                                                     subclass,
-                                                                     *location,
-                                                                     rotation,
-                                                                     5.0F,
-                                                                     38,
-                                                                     false,
-                                                                     true,
-                                                                     0,
-                                                                     false,
-                                                                     1.0F,
-                                                                     0,
-                                                                     false );
-            if( !zombiePack[packIndex] )
-            {
-                debugLog( "WARNING: Cannot spawn Zombie Wyvern being " + zombieBP.ToString() );
-                return dodoWyvernChar;
-            }
-            debugLog( "INFO: spawned a Zombie Wyvern of the above type." );
-            zombiePack[packIndex]->BeginPlay();
-            zombiePack[packIndex]->ForceUpdateColorSets( 0, 79 );
-            zombiePack[packIndex]->ForceUpdateColorSets( 1, 79 );
-            zombiePack[packIndex]->ForceUpdateColorSets( 2, 79 );
-            zombiePack[packIndex]->ForceUpdateColorSets( 3, 79 );
-            zombiePack[packIndex]->ForceUpdateColorSets( 4, 79 );
-            zombiePack[packIndex]->ForceUpdateColorSets( 5, 79 );
-            ++packIndex;
+        case ZombieType::Fire:
+            zombieBP = fireZombieBP;
+            debugLog( "INFO: a Zombie Fire Wyvern will spawn in the pack" );
+            break;
+        case ZombieType::Lightning:
+            zombieBP = lightningZombieBP;
+            debugLog( "INFO: a Zombie Lightning Wyvern will spawn in the pack" );
+            break;
+        case ZombieType::Poison:
+            zombieBP = poisonZombieBP;
+            debugLog( "INFO: a Zombie Poison Wyvern will spawn in the pack" );
+            break;
         }
+        UClass* zombieClass = UVictoryCore::BPLoadClass( &zombieBP );
+        if( !zombieClass )
+        {
+            debugLog( "WARNING: Cannot load Zombie Wyvern being " + zombieBP.ToString() );
+            return nullptr;
+        }
+        packOffset( *location,
+                    packIndex );
+        TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
+        int level = getRandomValue( 39 );
+        level += 38;
+        zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
+                                                                 subclass,
+                                                                 *location,
+                                                                 rotation,
+                                                                 5.0F,
+                                                                 level,
+                                                                 false,
+                                                                 true,
+                                                                 0,
+                                                                 false,
+                                                                 1.0F,
+                                                                 0,
+                                                                 false );
+        if( !zombiePack[packIndex] )
+        {
+            debugLog( "WARNING: Cannot spawn Zombie Wyvern being " + zombieBP.ToString() );
+            return dodoWyvernChar;
+        }
+        debugLog( "INFO: spawned a Zombie Wyvern of the above type of level " + std::to_string( level * 5 ) );
+        zombiePack[packIndex]->BeginPlay();
+        zombiePack[packIndex]->ForceUpdateColorSets( 0, 79 );
+        zombiePack[packIndex]->ForceUpdateColorSets( 1, 79 );
+        zombiePack[packIndex]->ForceUpdateColorSets( 2, 79 );
+        zombiePack[packIndex]->ForceUpdateColorSets( 3, 79 );
+        zombiePack[packIndex]->ForceUpdateColorSets( 4, 79 );
+        zombiePack[packIndex]->ForceUpdateColorSets( 5, 79 );
     }
-    while( packIndex < zombiePackSize );
     dodoWyvernChar->BeginPlay();
     return dodoWyvernChar;
 }
@@ -312,6 +316,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
 void load()
 {
     Log::Get().Init( "Fear Evolved Forever" );
+    std::srand( static_cast<unsigned>( std::time( nullptr ) ) );
     zombiePack.Init( nullptr,
                      zombiePackSize );
     auto& hooks = ArkApi::GetHooks();

@@ -151,11 +151,15 @@
     <ClCompile Include="FearEvolvedForever.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config.json" />
     <None Include="PluginInfo.json" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
     <Text Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="json.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
