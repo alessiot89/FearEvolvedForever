@@ -473,7 +473,7 @@ void ReadConfig()
     }
     else
     {
-        debugLog( "Invalid Zombie pack color spawn override chance, reverting to " + std::to_string( paintingSpecialChance ) );
+        debugLog( "Invalid Zombie pack special color spawn override chance, reverting to " + std::to_string( paintingSpecialChance ) );
     }
     file.close();
 }
