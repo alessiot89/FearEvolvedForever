@@ -21,8 +21,5 @@ ConfigAddNPCSpawnEntriesContainer=(NPCSpawnEntriesContainerClassString="SE_DinoS
 You can read more about this in the official Wiki https://ark.wiki.gg/wiki/Server_configuration#Creature_Spawn_related
 
 ## TODO:
-* read game difficulty
-* Check for SE map
 * Add chat notifications
-* Restore ingame messages?
 * Add more and better spawn locations

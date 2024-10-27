@@ -30,6 +30,7 @@ bool isNightNotified = false;
 float paintingChance = 0.5F;
 float paintingSpecialChance = 0.15F;
 
+float difficulty = 5.0F;
 
 // Dodo Wyvern spawns coords (position and rotation vectors).
 TArray<std::pair<FVector, FRotator>> spawnCoords{};
@@ -78,6 +79,7 @@ void initLocations()
 
 void initColors()
 {
+    // Read event colors.
     try
     {
         auto eventColors = config["EventColors"];
@@ -92,7 +94,7 @@ void initColors()
         packEventColorsSet.Empty();
         packEventColorsSet.Add( 0 );
     }
-
+    // Read special colors
     try
     {
         auto specialColors = config["SpecialColors"];
@@ -271,7 +273,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
                                                                  subclass,
                                                                  *location,
                                                                  *rotation,
-                                                                 5.0F,
+                                                                 difficulty,
                                                                  level,
                                                                  false,
                                                                  true,
@@ -422,6 +424,16 @@ void ReadConfig()
     float specialChance = std::numeric_limits<float>::infinity();
     try
     {
+        difficulty = config["Difficulty"];
+        debugLog( "Plugin Difficulty: " + std::to_string( difficulty ) );
+    }
+    catch( const std::exception& )
+    {
+        difficulty = 5.0F;
+        debugLog( "Invalid difficulty value, reverting to default 5.0 (Official settings)" );
+    }
+    try
+    {
         colorChance = config["EventColorsChance"];
         debugLog( "Json EventColorsChance: " + std::to_string( colorChance ) );
         if( colorChance >= 1.0F )
@@ -480,7 +492,6 @@ void ReadConfig()
 void load()
 {
     Log::Get().Init( "Fear Evolved Forever" );
-
     try
     {
         ReadConfig();
@@ -492,11 +503,9 @@ void load()
         Log::GetLog()->error( error.what() );
         throw error;
     }
-
     std::srand( static_cast<unsigned>( std::time( nullptr ) ) );
     zombiePack.Init( nullptr,
                      zombiePackSize );
-
     ArkApi::GetHooks().SetHook( "AShooterGameState.Tick",
                                 &hook_AShooterGameState_Tick,
                                 &AShooterGameState_Tick_original );
