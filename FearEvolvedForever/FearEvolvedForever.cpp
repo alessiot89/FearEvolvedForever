@@ -159,24 +159,21 @@ void paintZombie( APrimalDinoCharacter* zombie )
     // Zombie painting chance: [0, paintingChanceLimit]
     // Zomie special painting chance: [paintingChanceLimit+1, paintingSpecialChanceLimit]
     // No painting: (paintingSpecialChanceLimit, bigEnough]
-
-    TArray<int> colorSet;
-    colorSet.Init( 6, 0 );
-
+    constexpr int colorRegionsCount = 6;
     if( extraction <= paintingChanceLimit )
     {
         debugLog( "Zombie will have event painting!" );
-        for( int i{}; i < 6; ++i )
+        for( int i{}; i < colorRegionsCount; ++i )
         {
-            zombie->ForceUpdateColorSets( i, getRandomValue( packEventColorsSet.Num() ) );
+            zombie->ForceUpdateColorSets( i, packEventColorsSet[getRandomValue( packEventColorsSet.Num() )] );
         }
     }
     else if( extraction <= paintingSpecialChanceLimit )
     {
         debugLog( "Zombie will have special painting!" );
-        for( int i{}; i < colorSet.Num(); ++i )
+        for( int i{}; i < colorRegionsCount; ++i )
         {
-            zombie->ForceUpdateColorSets( i, getRandomValue( packSpecialColorsSet.Num() ) );
+            zombie->ForceUpdateColorSets( i, packSpecialColorsSet[getRandomValue( packSpecialColorsSet.Num() )] );
         }
     }
     else
