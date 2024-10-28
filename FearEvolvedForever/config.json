@@ -1,6 +1,10 @@
 {
-    "Difficulty":  5.0,
+    "Difficulty": 5.0,
     "EventColorsChance": 0.5,
+    "NightMessage": "Trick or treat? Midnight is coming, better watch your back!",
+    "MidnightMessage": "Are you a hero or a fool? Face your fear, Her Majesty Dodo Wyvern is here!",
+    "VictoryMessage": "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repated!",
+    "DefeatMessage": "Today you were not fast or strong enough..This is rough, Dodo Wyvern fled away!",
     "EventColors": [
         8,
         9,

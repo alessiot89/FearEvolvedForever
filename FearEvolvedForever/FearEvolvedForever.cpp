@@ -45,6 +45,14 @@ constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/W
 constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieLightning.Wyvern_Character_BP_ZombieLightning'" };
 constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
 
+FString nightMessage = "Trick or treat? Midnight is coming, better watch your back!";
+FString midnightMessage = "Are you a hero or a fool? Face your fear, Her Majesty Dodo Wyvern is here!";
+FString victorMessage = "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repated!";
+FString defeatMessage = "Today you were not fast or strong enough..This is rough, Dodo Wyvern fled away!";
+const FLinearColor color( 0.949F, 0.431F, 0.133F, 0.95F );
+constexpr float displayScale = 3.0F;
+constexpr float displayTime = 8.0F;
+
 std::ofstream debugLogFile;
 
 void debugLog( const std::string& info )
@@ -341,7 +349,12 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
         if( ( false == isEventTime ) and ( false == isNightNotified ) )
         {
             isNightNotified = true;
-            // TODO: send message in chat about the night started + time ingame!
+            ArkApi::GetApiUtils().SendNotificationToAll( color,
+                                                         displayScale,
+                                                         displayTime,
+                                                         nullptr, nightMessage.GetCharArray().GetData() );
+            ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                                                          nightMessage.GetCharArray().GetData() );
             debugLog( "Time: " + dbgTimeStr );
             debugLog( "It's night time!" );
         }
@@ -354,11 +367,15 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 debugLog( "Time: " + dbgTimeStr );
                 debugLog( "Try to spawn Dodo Wyvern.." );
                 dodoWyvern = spwanDodoWyvern();
-                // TODO: send message in chat about the Dodo Wyvern appeared!
                 isEventStarted = true;
                 isEventEnded = false;
+                ArkApi::GetApiUtils().SendNotificationToAll( color,
+                                                             displayScale,
+                                                             displayTime,
+                                                             nullptr, midnightMessage.GetCharArray().GetData() );
+                ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                                                              midnightMessage.GetCharArray().GetData() );
                 debugLog( "Event started, Dodo Wyvern spanwed!" );
-
             }
             // Event started and did not end yet.
             else if( false == isEventEnded )
@@ -369,8 +386,13 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 {
                     debugLog( "Time: " + dbgTimeStr );
                     debugLog( "DodoWwyvern has been slayed!" );
-                    // TODO: send message in chat about the Dodo Wyvern has been slayed!
                     isEventEnded = true;
+                    ArkApi::GetApiUtils().SendNotificationToAll( color,
+                                                                 displayScale,
+                                                                 displayTime,
+                                                                 nullptr, victorMessage.GetCharArray().GetData() );
+                    ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                                                                  victorMessage.GetCharArray().GetData() );
                 }
             }
         }
@@ -395,7 +417,12 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                     debugLog( "Night time ended, Dodo Wyvern fled away!" );
                     dodoWyvern->Destroy( false, true );
                     debugLog( "Destroy called on Dodo Wyvern" );
-                    // TODO: send message in chat about the Dodo Wyvern fled away!
+                    ArkApi::GetApiUtils().SendNotificationToAll( color,
+                                                                 displayScale,
+                                                                 displayTime,
+                                                                 nullptr, defeatMessage.GetCharArray().GetData() );
+                    ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                                                                  defeatMessage.GetCharArray().GetData() );
                 }
                 for( int i = 0; i < zombiePack.Num(); ++i )
                 {
