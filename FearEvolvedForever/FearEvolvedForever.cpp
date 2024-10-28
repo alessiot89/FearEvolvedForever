@@ -95,7 +95,7 @@ void initColors()
     }
     catch( const std::exception& )
     {
-        debugLog( "Failed to read event colors, default to 0 (no colors)" );
+        debugLog( "WARNING: Failed to read event colors, default to 0 (no colors)" );
         packEventColorsSet.Empty();
         packEventColorsSet.Add( 0 );
     }
@@ -110,7 +110,7 @@ void initColors()
     }
     catch( const std::exception& )
     {
-        debugLog( "Failed to read special colors, default to 0 (no colors)" );
+        debugLog( "WARNING: Failed to read special colors, default to 0 (no colors)" );
         packEventColorsSet.Empty();
         packEventColorsSet.Add( 0 );
     }
@@ -168,7 +168,7 @@ void paintZombie( APrimalDinoCharacter* zombie )
     // No painting: (paintingSpecialChanceLimit, bigEnough]
     if( extraction <= paintingChanceLimit )
     {
-        debugLog( "Zombie will have event painting!" );
+        debugLog( "INFO: Zombie will have event painting!" );
         for( int i{}; i < colorRegionsCount; ++i )
         {
             zombie->ForceUpdateColorSets( i, packEventColorsSet[getRandomValue( packEventColorsSet.Num() )] );
@@ -176,7 +176,7 @@ void paintZombie( APrimalDinoCharacter* zombie )
     }
     else if( extraction <= paintingSpecialChanceLimit )
     {
-        debugLog( "Zombie will have special painting!" );
+        debugLog( "INFO: Zombie will have special painting!" );
         for( int i{}; i < colorRegionsCount; ++i )
         {
             zombie->ForceUpdateColorSets( i, packSpecialColorsSet[getRandomValue( packSpecialColorsSet.Num() )] );
@@ -184,7 +184,7 @@ void paintZombie( APrimalDinoCharacter* zombie )
     }
     else
     {
-        debugLog( "Zombie will not have any painting at all!" );
+        debugLog( "INFO: Zombie will not have any painting at all!" );
     }
 }
 
@@ -305,7 +305,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
             dodoWyvernChar->BeginPlay();
             return dodoWyvernChar;
         }
-        debugLog( "INFO: spawned a Zombie Wyvern of the above type of level " + std::to_string( level * 5 ) );
+        debugLog( "INFO: spawned a Zombie Wyvern of the above type with level " + std::to_string( level * 5 ) );
         zombiePack[packIndex]->BeginPlay();
         paintZombie( zombiePack[packIndex] );
     }
@@ -355,8 +355,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                                                          nullptr, nightMessage.GetCharArray().GetData() );
             ArkApi::GetApiUtils().SendServerMessageToAll( color,
                                                           nightMessage.GetCharArray().GetData() );
-            debugLog( "Time: " + dbgTimeStr );
-            debugLog( "It's night time!" );
+            debugLog( "INFO: Time " + dbgTimeStr + ", it's night time!" );
         }
         // Check if is event-time.
         if( true == isEventTime )
@@ -364,8 +363,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
             // Check if event didn't yet start.
             if( false == isEventStarted )
             {
-                debugLog( "Time: " + dbgTimeStr );
-                debugLog( "Try to spawn Dodo Wyvern.." );
+                debugLog( "INFO: Time " + dbgTimeStr + ", try to spawn Dodo Wyvern..");
                 dodoWyvern = spwanDodoWyvern();
                 isEventStarted = true;
                 isEventEnded = false;
@@ -375,7 +373,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                                                              nullptr, midnightMessage.GetCharArray().GetData() );
                 ArkApi::GetApiUtils().SendServerMessageToAll( color,
                                                               midnightMessage.GetCharArray().GetData() );
-                debugLog( "Event started, Dodo Wyvern spanwed!" );
+                debugLog( "INFO: Event started, Dodo Wyvern spanwed!" );
             }
             // Event started and did not end yet.
             else if( false == isEventEnded )
@@ -383,22 +381,9 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 auto ptr = GetWeakReference( dodoWyvern );
                 // If Dodo Wyvern has been slayed, event ends, notify in chat.
                 // Note: pointer is null only if corpse has been removed.
-                if( nullptr == ptr )
+                if( nullptr == ptr or ptr->IsDead() )
                 {
-                    debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "DodoWwyvern has been slayed!" );
-                    isEventEnded = true;
-                    ArkApi::GetApiUtils().SendNotificationToAll( color,
-                                                                 displayScale,
-                                                                 displayTime,
-                                                                 nullptr, victorMessage.GetCharArray().GetData() );
-                    ArkApi::GetApiUtils().SendServerMessageToAll( color,
-                                                                  victorMessage.GetCharArray().GetData() );
-                }
-                else if( ptr->IsDead() )
-                {
-                    debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "DodoWwyvern has been slayed!" );
+                    debugLog( "INFO: Time " + dbgTimeStr + ", DodoWwyvern has been slayed");
                     isEventEnded = true;
                     ArkApi::GetApiUtils().SendNotificationToAll( color,
                                                                  displayScale,
@@ -421,15 +406,13 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 auto ptr = GetWeakReference( dodoWyvern );
                 if( nullptr == ptr )
                 {
-                    debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "WARNING: Night time ended, Dodo Wyvern not slayed and cannot find it! If the plugin just loaded, don't panic, it's OK" );
+                    debugLog( "WARNING: Time: " + dbgTimeStr + "Night time ended, Dodo Wyvern not slayed and cannot find it!If the plugin just loaded, don't panic, it's OK" );
                 }
                 else
                 {
-                    debugLog( "Time: " + dbgTimeStr );
-                    debugLog( "Night time ended, Dodo Wyvern fled away!" );
+                    debugLog( "INFO: Time: " + dbgTimeStr + ", night time ended, Dodo Wyvern fled away!" );
                     dodoWyvern->Destroy( false, true );
-                    debugLog( "Destroy called on Dodo Wyvern" );
+                    debugLog( "INFO: Destroy called on Dodo Wyvern" );
                     ArkApi::GetApiUtils().SendNotificationToAll( color,
                                                                  displayScale,
                                                                  displayTime,
@@ -442,13 +425,12 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                     auto zombiePtr = GetWeakReference( zombiePack[i] );
                     if( nullptr == zombiePtr )
                     {
-                        std::string info = "No zombie found for zombie pack #" + std::to_string( i );
-                        debugLog( info );
+                        debugLog( "INFO: No character found for zombie pack #" + std::to_string( i ) );
                     }
                     else
                     {
                         zombiePtr->Destroy( false, true );
-                        debugLog( "Destroy called for zombie pack #" + std::to_string( i ) );
+                        debugLog( "INFO: Destroy called for zombie pack #" + std::to_string( i ) );
                     }
                 }
             }
@@ -474,12 +456,12 @@ void ReadConfig()
     try
     {
         difficulty = config["Difficulty"];
-        debugLog( "Plugin Difficulty: " + std::to_string( difficulty ) );
+        debugLog( "INFO: Plugin Difficulty: " + std::to_string( difficulty ) );
     }
     catch( const std::exception& )
     {
         difficulty = 5.0F;
-        debugLog( "Invalid difficulty value, reverting to default 5.0 (Official settings)" );
+        debugLog( "WARNING: Invalid difficulty value, reverting to default 5.0 (Official settings)" );
     }
     float colorChance = std::numeric_limits<float>::infinity();
     float specialChance = std::numeric_limits<float>::infinity();
@@ -487,7 +469,7 @@ void ReadConfig()
     try
     {
         colorChance = config["EventColorsChance"];
-        debugLog( "Json EventColorsChance: " + std::to_string( colorChance ) );
+        debugLog( "INFO: Json EventColorsChance: " + std::to_string( colorChance ) );
         if( colorChance >= 1.0F )
         {
             colorChance = 1.0F;
@@ -497,7 +479,7 @@ void ReadConfig()
             colorChance = 0.0F;
         }
         specialChance = config["SpecialColorsChance"];
-        debugLog( "Json SpecialColorsChance: " + std::to_string( specialChance ) );
+        debugLog( "INFO: Json SpecialColorsChance: " + std::to_string( specialChance ) );
         if( specialChance >= 1.0F )
         {
             specialChance = 1.0F;
@@ -509,33 +491,30 @@ void ReadConfig()
         }
         if( ( colorChance + specialChance ) > 1.0F )
         {
-            debugLog( "Summed color chance values greater than 1.0! Let's keep the biggest value, and clamp the smaller" );
-            colorChance >= specialChance
-                ? specialChance = 1.0F - ( colorChance + specialChance )
-                : colorChance = 1.0F - ( colorChance + specialChance );
+            debugLog( "WARNING: Invalid color chance values, their sum cannot be greater than 1.0, reverting to default values (0.5 for EventColorsChance, 0.15 for SpecialColorsChance)" );
         }
     }
     catch( const std::exception& )
     {
-        debugLog( "Invalid color chance values, reverting to default (0.5 for EventColorsChance and 0.15 for SpecialColorsChance)" );
+        debugLog( "WARNING: Invalid color chance values, reverting to default values (0.5 for EventColorsChance, 0.15 for SpecialColorsChance)" );
     }
     if( colorChance != std::numeric_limits<float>::infinity() )
     {
         paintingChance = colorChance;
-        debugLog( "Zombie pack color spawn override chance set to " + std::to_string( paintingChance ) );
+        debugLog( "INFO: Zombie pack color spawn override chance set to " + std::to_string( paintingChance ) );
     }
     else
     {
-        debugLog( "Invalid Zombie pack color spawn override chance, reverting to " + std::to_string( paintingChance ) );
+        debugLog( "WARNING: Invalid Zombie pack color spawn override chance, reverting to " + std::to_string( paintingChance ) );
     }
     if( specialChance != std::numeric_limits<float>::infinity() )
     {
         paintingSpecialChance = specialChance;
-        debugLog( "Zombie pack color spawn override chance set to " + std::to_string( paintingSpecialChance ) );
+        debugLog( "INFO: Zombie pack color spawn override chance set to " + std::to_string( paintingSpecialChance ) );
     }
     else
     {
-        debugLog( "Invalid Zombie pack special color spawn override chance, reverting to " + std::to_string( paintingSpecialChance ) );
+        debugLog( "WARNING: Invalid Zombie pack special color spawn override chance, reverting to " + std::to_string( paintingSpecialChance ) );
     }
     // Try to read custom event messages.
     try
