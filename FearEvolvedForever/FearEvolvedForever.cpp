@@ -144,6 +144,7 @@ void pickSpawn( FVector*& position,
     debugLog( info );
 }
 
+// Paints Zombie Wyverns according to config.
 void paintZombie( APrimalDinoCharacter* zombie )
 {
     constexpr auto bigEnough = 10000;
@@ -153,10 +154,10 @@ void paintZombie( APrimalDinoCharacter* zombie )
     // 1.0 : 10000 = paintingSpecialChance : x
     auto paintingSpecialChanceLimit = static_cast<int>( bigEnough * paintingSpecialChance );
     paintingSpecialChanceLimit += paintingChanceLimit;
+    constexpr int colorRegionsCount = 6;
     // Zombie painting chance: [0, paintingChanceLimit]
     // Zomie special painting chance: [paintingChanceLimit+1, paintingSpecialChanceLimit]
     // No painting: (paintingSpecialChanceLimit, bigEnough]
-    constexpr int colorRegionsCount = 6;
     if( extraction <= paintingChanceLimit )
     {
         debugLog( "Zombie will have event painting!" );
@@ -179,31 +180,33 @@ void paintZombie( APrimalDinoCharacter* zombie )
     }
 }
 
-// add some locationoffset to the zombie pack.
+// Adds some offset for the Zombie pack from the Dodo Wyvern spawn point.
 void packOffset( FVector& location,
                  int packIndex )
 {
+    // Offset is in UE units, 1UE unit ~ 1cm.
+    constexpr float offset = 5000.0F;
     switch( packIndex )
     {
     case 0:
-        location.X += 5000.0F;
-        location.Y += 5000.0F;
-        location.Z += 5000.0F;
+        location.X += offset;
+        location.Y += offset;
+        location.Z += offset;
         break;
     case 1:
-        location.X -= 5000.0F;
-        location.Y += 5000.0F;
-        location.Z += 5000.0F;
+        location.X -= offset;
+        location.Y += offset;
+        location.Z += offset;
         break;
     case 2:
-        location.X += 5000.0F;
-        location.Y += 5000.0F;
-        location.Z -= 5000.0F;
+        location.X += offset;
+        location.Y += offset;
+        location.Z -= offset;
         break;
     case 3:
-        location.X -= 5000.0F;
-        location.Y += 5000.0F;
-        location.Z -= 5000.0F;
+        location.X -= offset;
+        location.Y += offset;
+        location.Z -= offset;
         break;
     default:
         debugLog( "WARNING: invalid pack index on pack offset computation! Index was: " + std::to_string( packIndex ) );
@@ -211,8 +214,10 @@ void packOffset( FVector& location,
     }
 }
 
+// Spawns Dodo Wyvern and 4 high level Zombie Wyvern pack guard with random difficulty and colors according to config.
 APrimalDinoCharacter* spwanDodoWyvern()
 {
+    // Spawn Dodo Wyvern.
     FString dodoWyvernBP{ dodoWyvernBP_str };
     UClass* dodoWyvernClass = UVictoryCore::BPLoadClass( &dodoWyvernBP );
     if( !dodoWyvernClass )
@@ -220,14 +225,9 @@ APrimalDinoCharacter* spwanDodoWyvern()
         debugLog( "WARNING: Cannot load Dodo Wyvern class!" );
         return nullptr;
     }
-    //FActorSpawnParameters spawnParams;
     FVector* location{};
     FRotator* rotation{};
     pickSpawn( location, rotation );
-    //auto dodoWyvernChar = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass,
-    //                                                                                                        location,
-    //                                                                                                        rotation,
-    //                                                                                                        &spawnParams ) );
     auto dodoWyvernChar = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
                                                            TSubclassOf<APrimalDinoCharacter>( dodoWyvernClass ),
                                                            *location,
@@ -241,13 +241,12 @@ APrimalDinoCharacter* spwanDodoWyvern()
                                                            1.0F,
                                                            0,
                                                            false );
-
     if( !dodoWyvernChar )
     {
         debugLog( "WARNING: Cannot spawn Dodo Wyvern!" );
         return nullptr;
     }
-    // Spawn the 4 zombie wyvern pack around Dodo Wyvern.
+    // Spawn the 4 Zombie Wyverns pack around Dodo Wyvern.
     for( int packIndex = 0; packIndex < zombiePackSize; ++packIndex )
     {
         auto randomType = getRandomValue( ZombieType::LastInvalid );
@@ -277,6 +276,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
                     packIndex );
         TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
         int level = getRandomValue( 39 );
+        // Zombie Pack guard will be high level spawns, ie over max wild value (default for Wyverns is difficulty * 38)
         level += 38;
         zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
                                                                  subclass,
@@ -497,7 +497,6 @@ void ReadConfig()
     }
     file.close();
 }
-
 
 void load()
 {
