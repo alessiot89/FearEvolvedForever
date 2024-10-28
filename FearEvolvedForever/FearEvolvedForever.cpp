@@ -464,6 +464,7 @@ void ReadConfig()
         throw std::runtime_error( "Can't open Config.json" );
     }
     file >> config;
+    file.close();
     // Check for debug log setting
     try
     {
@@ -564,7 +565,6 @@ void ReadConfig()
         defeatMessage = "Today you were not fast or strong enough..This is rough, Dodo Wyvern fled away!";
         debugLog( "Invalid event messages, reverting to hardcoded default" );
     }
-    file.close();
 }
 
 void load()

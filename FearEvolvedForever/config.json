@@ -2,6 +2,7 @@
     "DebugLog": true,
     "Difficulty": 5.0,
     "EventColorsChance": 0.5,
+    "SpecialColorsChance": 0.35,
     "NightMessage": "Trick or treat? Midnight is coming, better watch your back!",
     "MidnightMessage": "Are you a hero or a fool? Face your fear, Her Majesty Dodo Wyvern is here!",
     "VictoryMessage": "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repeated!",
@@ -25,7 +26,6 @@
         85,
         89
     ],
-    "SpecialColorsChance": 0.35,
     "SpecialColors": [
         1,
         2,
