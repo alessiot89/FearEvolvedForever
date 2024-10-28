@@ -40,7 +40,7 @@ APrimalDinoCharacter* dodoWyvern{ nullptr };
 constexpr int zombiePackSize = 4;
 TArray<APrimalDinoCharacter*> zombiePack;
 
-constexpr auto const dodoWyvernBP_str{ "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'" };
+constexpr auto const dodoWyvernBP{ "Blueprint'/Game/ScorchedEarth/Dinos/DodoWyvern/DodoWyvern_Character_BP.DodoWyvern_Character_BP'" };
 constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieFire.Wyvern_Character_BP_ZombieFire'" };
 constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieLightning.Wyvern_Character_BP_ZombieLightning'" };
 constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
@@ -235,8 +235,8 @@ void packOffset( FVector& location,
 APrimalDinoCharacter* spwanDodoWyvern()
 {
     // Spawn Dodo Wyvern.
-    FString dodoWyvernBP{ dodoWyvernBP_str };
-    UClass* dodoWyvernClass = UVictoryCore::BPLoadClass( &dodoWyvernBP );
+    FString dodoWyvernBPPath{ dodoWyvernBP };
+    UClass* dodoWyvernClass = UVictoryCore::BPLoadClass( &dodoWyvernBPPath );
     if( !dodoWyvernClass )
     {
         debugLog( "WARNING: Cannot load Dodo Wyvern class!" );
