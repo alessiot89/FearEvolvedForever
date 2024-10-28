@@ -49,7 +49,7 @@ FString nightMessage;
 FString midnightMessage;
 FString victorMessage;
 FString defeatMessage;
-const FLinearColor color( 0.949F, 0.431F, 0.133F, 0.95F );
+const FLinearColor color{ 0.949F, 0.431F, 0.133F, 0.95F };
 constexpr float displayScale = 3.0F;
 constexpr float displayTime = 8.0F;
 
@@ -117,7 +117,8 @@ void initColors()
 }
 
 template<typename T>
-T getRandomValue( T minValue, T outerLimit )
+T getRandomValue( T minValue,
+                  T outerLimit )
 {
     do
     {
@@ -134,7 +135,8 @@ T getRandomValue( T minValue, T outerLimit )
 template<typename T>
 T getRandomValue( T outerLimit )
 {
-    return getRandomValue( static_cast<T>( 0 ), outerLimit );
+    return getRandomValue( static_cast<T>( 0 ),
+                           outerLimit );
 }
 
 void pickSpawn( FVector*& position,
@@ -156,7 +158,8 @@ void pickSpawn( FVector*& position,
 void paintZombie( APrimalDinoCharacter* zombie )
 {
     constexpr auto bigEnough = 10000;
-    int extraction = getRandomValue( 1, 10000 );
+    int extraction = getRandomValue( 1,
+                                     bigEnough );
     // 1.0 : 10000 = paintingChance : x
     auto paintingChanceLimit = static_cast<int>( bigEnough * paintingChance );
     // 1.0 : 10000 = paintingSpecialChance : x
@@ -235,7 +238,8 @@ APrimalDinoCharacter* spwanDodoWyvern()
     }
     FVector* location{};
     FRotator* rotation{};
-    pickSpawn( location, rotation );
+    pickSpawn( location,
+               rotation );
     auto dodoWyvernChar = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
                                                            TSubclassOf<APrimalDinoCharacter>( dodoWyvernClass ),
                                                            *location,
@@ -411,7 +415,8 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 else
                 {
                     debugLog( "INFO: Time: " + dbgTimeStr + ", night time ended, Dodo Wyvern fled away!" );
-                    dodoWyvern->Destroy( false, true );
+                    dodoWyvern->Destroy( false,
+                                         true );
                     debugLog( "INFO: Destroy called on Dodo Wyvern" );
                     ArkApi::GetApiUtils().SendNotificationToAll( color,
                                                                  displayScale,
@@ -429,7 +434,8 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                     }
                     else
                     {
-                        zombiePtr->Destroy( false, true );
+                        zombiePtr->Destroy( false,
+                                            true );
                         debugLog( "INFO: Destroy called for zombie pack #" + std::to_string( i ) );
                     }
                 }
