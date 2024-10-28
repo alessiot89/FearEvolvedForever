@@ -53,11 +53,15 @@ const FLinearColor displayColor{ 0.949F, 0.431F, 0.133F, 0.95F };
 constexpr float displayScale = 3.0F;
 constexpr float displayTime = 8.0F;
 
+bool logDebug = true;
 std::ofstream debugLogFile;
 
 void debugLog( const std::string& info )
 {
-    debugLogFile << info << std::endl;
+    if( logDebug )
+    {
+        debugLogFile << info << std::endl;
+    }
 }
 
 enum class ZombieType : std::uint8_t
@@ -174,7 +178,8 @@ void paintZombie( APrimalDinoCharacter* zombie )
         debugLog( "INFO: Zombie will have event painting!" );
         for( int i{}; i < colorRegionsCount; ++i )
         {
-            zombie->ForceUpdateColorSets( i, packEventColorsSet[getRandomValue( packEventColorsSet.Num() )] );
+            zombie->ForceUpdateColorSets( i,
+                                          packEventColorsSet[getRandomValue( packEventColorsSet.Num() )] );
         }
     }
     else if( extraction <= paintingSpecialChanceLimit )
@@ -182,7 +187,8 @@ void paintZombie( APrimalDinoCharacter* zombie )
         debugLog( "INFO: Zombie will have special painting!" );
         for( int i{}; i < colorRegionsCount; ++i )
         {
-            zombie->ForceUpdateColorSets( i, packSpecialColorsSet[getRandomValue( packSpecialColorsSet.Num() )] );
+            zombie->ForceUpdateColorSets( i,
+                                          packSpecialColorsSet[getRandomValue( packSpecialColorsSet.Num() )] );
         }
     }
     else
@@ -367,7 +373,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
             // Check if event didn't yet start.
             if( false == isEventStarted )
             {
-                debugLog( "INFO: Time " + dbgTimeStr + ", try to spawn Dodo Wyvern..");
+                debugLog( "INFO: Time " + dbgTimeStr + ", try to spawn Dodo Wyvern.." );
                 dodoWyvern = spwanDodoWyvern();
                 isEventStarted = true;
                 isEventEnded = false;
@@ -387,7 +393,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 // Note: pointer is null only if corpse has been removed.
                 if( nullptr == ptr or ptr->IsDead() )
                 {
-                    debugLog( "INFO: Time " + dbgTimeStr + ", DodoWwyvern has been slayed");
+                    debugLog( "INFO: Time " + dbgTimeStr + ", DodoWwyvern has been slayed" );
                     isEventEnded = true;
                     ArkApi::GetApiUtils().SendNotificationToAll( displayColor,
                                                                  displayScale,
@@ -458,6 +464,26 @@ void ReadConfig()
         throw std::runtime_error( "Can't open Config.json" );
     }
     file >> config;
+    // Check for debug log setting
+    try
+    {
+        logDebug = config["DebugLog"];
+        if( logDebug )
+        {
+            debugLogFile.open( "/ArkApi/Plugins/FearEvolvedForever/DebugLog.txt", std::ios::app );
+            debugLog( "================================================================================" );
+            debugLog( "Fear Evolved Forever Plugin loaded" );
+            debugLog( "================================================================================" );
+        }
+    }
+    catch( const std::exception& )
+    {
+        debugLogFile.open( "/ArkApi/Plugins/FearEvolvedForever/DebugLog.txt", std::ios::app );
+        debugLog( "================================================================================" );
+        debugLog( "Fear Evolved Forever Plugin loaded" );
+        debugLog( "================================================================================" );
+        debugLog( "WARNING: Failed to DebugLog settings, reverted to default (enabled)" );
+    }
     // Try to read Dodo Wyvern and pack difficulty.
     try
     {
@@ -576,15 +602,14 @@ BOOL APIENTRY DllMain( HINSTANCE /*hinstDLL*/,
     switch( fdwReason )
     {
     case DLL_PROCESS_ATTACH:
-        debugLogFile.open( "_FearEvolvedForever_debugLog.txt", std::ios::app );
-        debugLog( "================================================================================" );
-        debugLog( "Fear Evolved Forever Plugin loaded" );
-        debugLog( "================================================================================" );
         load();
         break;
     case DLL_PROCESS_DETACH:
-        debugLog( "Plugin Unloading" );
-        debugLogFile.close();
+        if( logDebug )
+        {
+            debugLog( "Plugin Unloading" );
+            debugLogFile.close();
+        }
         unload();
         break;
     }
