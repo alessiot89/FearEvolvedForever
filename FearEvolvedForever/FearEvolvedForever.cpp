@@ -45,10 +45,10 @@ constexpr auto const fireZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/W
 constexpr auto const lightningZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombieLightning.Wyvern_Character_BP_ZombieLightning'" };
 constexpr auto const poisonZombieBP{ "Blueprint'/Game/ScorchedEarth/Dinos/Wyvern/Wyvern_Character_BP_ZombiePoison.Wyvern_Character_BP_ZombiePoison'" };
 
-FString nightMessage = "Trick or treat? Midnight is coming, better watch your back!";
-FString midnightMessage = "Are you a hero or a fool? Face your fear, Her Majesty Dodo Wyvern is here!";
-FString victorMessage = "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repated!";
-FString defeatMessage = "Today you were not fast or strong enough..This is rough, Dodo Wyvern fled away!";
+FString nightMessage;
+FString midnightMessage;
+FString victorMessage;
+FString defeatMessage;
 const FLinearColor color( 0.949F, 0.431F, 0.133F, 0.95F );
 constexpr float displayScale = 3.0F;
 constexpr float displayTime = 8.0F;
@@ -457,8 +457,7 @@ void ReadConfig()
         throw std::runtime_error( "Can't open Config.json" );
     }
     file >> config;
-    float colorChance = std::numeric_limits<float>::infinity();
-    float specialChance = std::numeric_limits<float>::infinity();
+    // Try to read Dodo Wyvern and pack difficulty.
     try
     {
         difficulty = config["Difficulty"];
@@ -469,6 +468,9 @@ void ReadConfig()
         difficulty = 5.0F;
         debugLog( "Invalid difficulty value, reverting to default 5.0 (Official settings)" );
     }
+    float colorChance = std::numeric_limits<float>::infinity();
+    float specialChance = std::numeric_limits<float>::infinity();
+    // Try to read pack color settings
     try
     {
         colorChance = config["EventColorsChance"];
@@ -522,6 +524,23 @@ void ReadConfig()
     {
         debugLog( "Invalid Zombie pack special color spawn override chance, reverting to " + std::to_string( paintingSpecialChance ) );
     }
+    // Try to read custom event messages.
+    try
+    {
+        nightMessage.ToString() = config["NightMessage"];
+        midnightMessage.ToString() = config["MidnightMessage"];
+        victorMessage.ToString() = config["VictoryMessage"];
+        defeatMessage.ToString() = config["DefeatMessage"];
+    }
+    catch( const std::exception& )
+    {
+        nightMessage = "Trick or treat? Midnight is coming, better watch your back!";
+        midnightMessage = "Are you a hero or a fool? Face your fear, Her Majesty Dodo Wyvern is here!";
+        victorMessage = "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repated!";
+        defeatMessage = "Today you were not fast or strong enough..This is rough, Dodo Wyvern fled away!";
+        debugLog( "Invalid event messages, reverting to hardcoded default" );
+
+    }
     file.close();
 }
 
@@ -560,7 +579,7 @@ BOOL APIENTRY DllMain( HINSTANCE /*hinstDLL*/,
     switch( fdwReason )
     {
     case DLL_PROCESS_ATTACH:
-        debugLogFile.open( "_FearEvolved_forever_debugLog.txt", std::ios::app );
+        debugLogFile.open( "_FearEvolvedForever_debugLog.txt", std::ios::app );
         debugLog( "================================================================================" );
         debugLog( "Fear Evolved Forever Plugin loaded" );
         debugLog( "================================================================================" );
