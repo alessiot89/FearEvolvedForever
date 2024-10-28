@@ -1,5 +1,6 @@
 #pragma warning(push, 3)
 #include <API/ARK/Ark.h>
+#include "json.hpp"
 #pragma warning(pop)
 #pragma comment(lib, "ArkApi.lib")
 
@@ -10,10 +11,7 @@
 #include <limits>
 #include <string>
 
-#include "json.hpp"
-
 nlohmann::json config;
-
 
 // Dawn time in seconds, about 04:30 ingame
 constexpr float dawnTime = 16200.0F;
@@ -37,7 +35,6 @@ TArray<std::pair<FVector, FRotator>> spawnCoords{};
 
 TArray<int> packEventColorsSet{};
 TArray<int> packSpecialColorsSet{};
-
 
 APrimalDinoCharacter* dodoWyvern{ nullptr };
 constexpr int zombiePackSize = 4;
@@ -151,13 +148,11 @@ void paintZombie( APrimalDinoCharacter* zombie )
 {
     constexpr auto bigEnough = 10000;
     int extraction = getRandomValue( 1, 10000 );
-
     // 1.0 : 10000 = paintingChance : x
     auto paintingChanceLimit = static_cast<int>( bigEnough * paintingChance );
     // 1.0 : 10000 = paintingSpecialChance : x
     auto paintingSpecialChanceLimit = static_cast<int>( bigEnough * paintingSpecialChance );
     paintingSpecialChanceLimit += paintingChanceLimit;
-
     // Zombie painting chance: [0, paintingChanceLimit]
     // Zomie special painting chance: [paintingChanceLimit+1, paintingSpecialChanceLimit]
     // No painting: (paintingSpecialChanceLimit, bigEnough]
@@ -225,14 +220,28 @@ APrimalDinoCharacter* spwanDodoWyvern()
         debugLog( "WARNING: Cannot load Dodo Wyvern class!" );
         return nullptr;
     }
-    FActorSpawnParameters spawnParams;
+    //FActorSpawnParameters spawnParams;
     FVector* location{};
     FRotator* rotation{};
     pickSpawn( location, rotation );
-    auto dodoWyvernChar = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass,
-                                                                                                            location,
-                                                                                                            rotation,
-                                                                                                            &spawnParams ) );
+    //auto dodoWyvernChar = static_cast<APrimalDinoCharacter*>( ArkApi::GetApiUtils().GetWorld()->SpawnActor( dodoWyvernClass,
+    //                                                                                                        location,
+    //                                                                                                        rotation,
+    //                                                                                                        &spawnParams ) );
+    auto dodoWyvernChar = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
+                                                           TSubclassOf<APrimalDinoCharacter>( dodoWyvernClass ),
+                                                           *location,
+                                                           *rotation,
+                                                           difficulty,
+                                                           getRandomValue( 39 ),
+                                                           false,
+                                                           true,
+                                                           0,
+                                                           false,
+                                                           1.0F,
+                                                           0,
+                                                           false );
+
     if( !dodoWyvernChar )
     {
         debugLog( "WARNING: Cannot spawn Dodo Wyvern!" );
@@ -285,6 +294,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
         if( !zombiePack[packIndex] )
         {
             debugLog( "WARNING: Cannot spawn Zombie Wyvern being " + zombieBP.ToString() );
+            dodoWyvernChar->BeginPlay();
             return dodoWyvernChar;
         }
         debugLog( "INFO: spawned a Zombie Wyvern of the above type of level " + std::to_string( level * 5 ) );
@@ -359,7 +369,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 {
                     debugLog( "Time: " + dbgTimeStr );
                     debugLog( "DodoWwyvern has been slayed!" );
-                    // TODO: send message in chat about the Dodo Wyvern appeared!
+                    // TODO: send message in chat about the Dodo Wyvern has been slayed!
                     isEventEnded = true;
                 }
             }
