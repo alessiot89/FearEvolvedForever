@@ -70,7 +70,7 @@ enum class ZombieType : std::uint8_t
 
 void initLocations()
 {
-    auto placements = config["Placements"];
+    auto& placements = config["Placements"];
     for( auto& entry : placements )
     {
         spawnCoords.Add( { FVector( entry["x"],
@@ -87,7 +87,7 @@ void initColors()
     // Read event colors.
     try
     {
-        auto eventColors = config["EventColors"];
+        auto& eventColors = config["EventColors"];
         for( auto& entry : eventColors )
         {
             packEventColorsSet.Add( entry );
@@ -102,7 +102,7 @@ void initColors()
     // Read special colors
     try
     {
-        auto specialColors = config["SpecialColors"];
+        auto& specialColors = config["SpecialColors"];
         for( auto& entry : specialColors )
         {
             packSpecialColorsSet.Add( entry );
@@ -382,7 +382,20 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
             {
                 auto ptr = GetWeakReference( dodoWyvern );
                 // If Dodo Wyvern has been slayed, event ends, notify in chat.
+                // Note: pointer is null only if corpse has been removed.
                 if( nullptr == ptr )
+                {
+                    debugLog( "Time: " + dbgTimeStr );
+                    debugLog( "DodoWwyvern has been slayed!" );
+                    isEventEnded = true;
+                    ArkApi::GetApiUtils().SendNotificationToAll( color,
+                                                                 displayScale,
+                                                                 displayTime,
+                                                                 nullptr, victorMessage.GetCharArray().GetData() );
+                    ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                                                                  victorMessage.GetCharArray().GetData() );
+                }
+                else if( ptr->IsDead() )
                 {
                     debugLog( "Time: " + dbgTimeStr );
                     debugLog( "DodoWwyvern has been slayed!" );
@@ -527,19 +540,18 @@ void ReadConfig()
     // Try to read custom event messages.
     try
     {
-        nightMessage.ToString() = config["NightMessage"];
-        midnightMessage.ToString() = config["MidnightMessage"];
-        victorMessage.ToString() = config["VictoryMessage"];
-        defeatMessage.ToString() = config["DefeatMessage"];
+        nightMessage = config["NightMessage"].dump().c_str();
+        midnightMessage = config["MidnightMessage"].dump().c_str();
+        victorMessage = config["VictoryMessage"].dump().c_str();
+        defeatMessage = config["DefeatMessage"].dump().c_str();
     }
     catch( const std::exception& )
     {
         nightMessage = "Trick or treat? Midnight is coming, better watch your back!";
         midnightMessage = "Are you a hero or a fool? Face your fear, Her Majesty Dodo Wyvern is here!";
-        victorMessage = "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repated!";
+        victorMessage = "Praise you hero, the monster has been defeated. Claim your prize before the fight will be repeated!";
         defeatMessage = "Today you were not fast or strong enough..This is rough, Dodo Wyvern fled away!";
         debugLog( "Invalid event messages, reverting to hardcoded default" );
-
     }
     file.close();
 }
