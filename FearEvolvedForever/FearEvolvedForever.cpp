@@ -49,7 +49,7 @@ FString nightMessage;
 FString midnightMessage;
 FString victorMessage;
 FString defeatMessage;
-const FLinearColor color{ 0.949F, 0.431F, 0.133F, 0.95F };
+const FLinearColor displayColor{ 0.949F, 0.431F, 0.133F, 0.95F };
 constexpr float displayScale = 3.0F;
 constexpr float displayTime = 8.0F;
 
@@ -353,11 +353,11 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
         if( ( false == isEventTime ) and ( false == isNightNotified ) )
         {
             isNightNotified = true;
-            ArkApi::GetApiUtils().SendNotificationToAll( color,
+            ArkApi::GetApiUtils().SendNotificationToAll( displayColor,
                                                          displayScale,
                                                          displayTime,
                                                          nullptr, nightMessage.GetCharArray().GetData() );
-            ArkApi::GetApiUtils().SendServerMessageToAll( color,
+            ArkApi::GetApiUtils().SendServerMessageToAll( displayColor,
                                                           nightMessage.GetCharArray().GetData() );
             debugLog( "INFO: Time " + dbgTimeStr + ", it's night time!" );
         }
@@ -371,11 +371,11 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 dodoWyvern = spwanDodoWyvern();
                 isEventStarted = true;
                 isEventEnded = false;
-                ArkApi::GetApiUtils().SendNotificationToAll( color,
+                ArkApi::GetApiUtils().SendNotificationToAll( displayColor,
                                                              displayScale,
                                                              displayTime,
                                                              nullptr, midnightMessage.GetCharArray().GetData() );
-                ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                ArkApi::GetApiUtils().SendServerMessageToAll( displayColor,
                                                               midnightMessage.GetCharArray().GetData() );
                 debugLog( "INFO: Event started, Dodo Wyvern spanwed!" );
             }
@@ -389,11 +389,11 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 {
                     debugLog( "INFO: Time " + dbgTimeStr + ", DodoWwyvern has been slayed");
                     isEventEnded = true;
-                    ArkApi::GetApiUtils().SendNotificationToAll( color,
+                    ArkApi::GetApiUtils().SendNotificationToAll( displayColor,
                                                                  displayScale,
                                                                  displayTime,
                                                                  nullptr, victorMessage.GetCharArray().GetData() );
-                    ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                    ArkApi::GetApiUtils().SendServerMessageToAll( displayColor,
                                                                   victorMessage.GetCharArray().GetData() );
                 }
             }
@@ -418,11 +418,11 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                     dodoWyvern->Destroy( false,
                                          true );
                     debugLog( "INFO: Destroy called on Dodo Wyvern" );
-                    ArkApi::GetApiUtils().SendNotificationToAll( color,
+                    ArkApi::GetApiUtils().SendNotificationToAll( displayColor,
                                                                  displayScale,
                                                                  displayTime,
                                                                  nullptr, defeatMessage.GetCharArray().GetData() );
-                    ArkApi::GetApiUtils().SendServerMessageToAll( color,
+                    ArkApi::GetApiUtils().SendServerMessageToAll( displayColor,
                                                                   defeatMessage.GetCharArray().GetData() );
                 }
                 for( int i = 0; i < zombiePack.Num(); ++i )
