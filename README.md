@@ -1,6 +1,6 @@
 # FearEvolvedForever
 
-Attempt to re-implement Fear Evolved mechanics for Scorched EArth
+Attempt to re-implement Fear Evolved mechanics for Scorched Earth
 
 # Instructions .. aka, how does it work?
 At middnight on a random location a Dodo Wyvern and extra 4 high level zombie wyvern minions will spawn on SE map.
