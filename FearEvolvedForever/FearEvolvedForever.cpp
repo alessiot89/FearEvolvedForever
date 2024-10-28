@@ -457,8 +457,8 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
 
 void ReadConfig()
 {
-    const std::string config_path = ArkApi::Tools::GetCurrentDir() + "/ArkApi/Plugins/FearEvolvedForever/Config.json";
-    std::ifstream file{ config_path };
+    const std::string configPath = ArkApi::Tools::GetCurrentDir() + "/ArkApi/Plugins/FearEvolvedForever/Config.json";
+    std::ifstream file{ configPath };
     if( !file.is_open() )
     {
         throw std::runtime_error( "Can't open Config.json" );
