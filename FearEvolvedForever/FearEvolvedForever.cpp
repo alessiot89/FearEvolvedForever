@@ -465,13 +465,14 @@ void ReadConfig()
     }
     file >> config;
     file.close();
+    const std::string logPath = ArkApi::Tools::GetCurrentDir() + "/ArkApi/Plugins/FearEvolvedForever/DebugLog.txt";
     // Check for debug log setting
     try
     {
         logDebug = config["DebugLog"];
         if( logDebug )
         {
-            debugLogFile.open( "/ArkApi/Plugins/FearEvolvedForever/DebugLog.txt", std::ios::app );
+            debugLogFile.open( logPath, std::ios::app );
             debugLog( "================================================================================" );
             debugLog( "Fear Evolved Forever Plugin loaded" );
             debugLog( "================================================================================" );
@@ -479,11 +480,11 @@ void ReadConfig()
     }
     catch( const std::exception& )
     {
-        debugLogFile.open( "/ArkApi/Plugins/FearEvolvedForever/DebugLog.txt", std::ios::app );
+        debugLogFile.open( logPath, std::ios::app );
         debugLog( "================================================================================" );
         debugLog( "Fear Evolved Forever Plugin loaded" );
         debugLog( "================================================================================" );
-        debugLog( "WARNING: Failed to DebugLog settings, reverted to default (enabled)" );
+        debugLog( "WARNING: Failed to read DebugLog setting, reverted to default (enabled)" );
     }
     // Try to read Dodo Wyvern and pack difficulty.
     try
