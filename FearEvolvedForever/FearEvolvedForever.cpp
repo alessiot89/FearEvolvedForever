@@ -13,8 +13,8 @@
 
 nlohmann::json config;
 
-// Dawn time in seconds, about 05:30 ingame
-constexpr float dawnTime = 19800.0F;
+// Dawn time in seconds, about 05:15 ingame
+constexpr float dawnTime = 18900.0F;
 // Night start time in seconds, about 21:50 ingame
 constexpr float nightTime = 78600.0F;
 constexpr float midnight = 0.0F;
@@ -32,7 +32,7 @@ float difficulty = 5.0F;
 
 // Dodo Wyvern spawns coords (position and rotation vectors).
 TArray<std::pair<FVector, FRotator>> spawnCoords{};
-
+//int spawnPointIndex = 0;
 TArray<int> packEventColorsSet{};
 TArray<int> packSpecialColorsSet{};
 
@@ -152,6 +152,14 @@ void pickSpawn( FVector*& position,
                 FRotator*& rotation )
 {
     auto randomIndex = getRandomValue( spawnCoords.Num() );
+    // BEGIN Test spawn points
+    //if( spawnPointIndex == 30 )
+    //{
+    //    spawnPointIndex = 0;
+    //}
+    //randomIndex = spawnPointIndex;
+    //++spawnPointIndex;
+    // END test spawn points
     position = &spawnCoords[randomIndex].first;
     rotation = &spawnCoords[randomIndex].second;
     std::string info{ "INFO: picked location at index " };
