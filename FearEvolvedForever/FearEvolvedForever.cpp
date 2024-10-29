@@ -535,7 +535,7 @@ void ReadConfig()
     if( colorChance != std::numeric_limits<float>::infinity() )
     {
         paintingChance = colorChance;
-        debugLog( "INFO: Zombie pack color spawn override chance set to " + std::to_string( paintingChance ) );
+        debugLog( "INFO: Zombie pack event color spawn override chance set to " + std::to_string( paintingChance ) );
     }
     else
     {
@@ -544,7 +544,7 @@ void ReadConfig()
     if( specialChance != std::numeric_limits<float>::infinity() )
     {
         paintingSpecialChance = specialChance;
-        debugLog( "INFO: Zombie pack color spawn override chance set to " + std::to_string( paintingSpecialChance ) );
+        debugLog( "INFO: Zombie pack special color spawn override chance set to " + std::to_string( paintingSpecialChance ) );
     }
     else
     {
