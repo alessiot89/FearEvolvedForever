@@ -421,7 +421,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
                 auto ptr = GetWeakReference( dodoWyvern );
                 if( nullptr == ptr )
                 {
-                    debugLog( "WARNING: Time: " + dbgTimeStr + "Night time ended, Dodo Wyvern not slayed and cannot find it!If the plugin just loaded, don't panic, it's OK" );
+                    debugLog( "WARNING: Time: " + dbgTimeStr + ", Night time ended, Dodo Wyvern not slayed and cannot find it! If the plugin just loaded, don't panic, it's OK" );
                 }
                 else
                 {
