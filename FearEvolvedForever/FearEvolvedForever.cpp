@@ -13,8 +13,8 @@
 
 nlohmann::json config;
 
-// Dawn time in seconds, about 04:30 ingame
-constexpr float dawnTime = 16200.0F;
+// Dawn time in seconds, about 05:30 ingame
+constexpr float dawnTime = 19800.0F;
 // Night start time in seconds, about 21:50 ingame
 constexpr float nightTime = 78600.0F;
 constexpr float midnight = 0.0F;

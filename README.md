@@ -4,7 +4,7 @@ Attempt to re-implement Fear Evolved mechanics for Scorched Earth
 
 # Instructions .. aka, how does it work?
 At middnight on a random location a Dodo Wyvern and extra 4 high level zombie wyvern minions will spawn on SE map.
-You have time until dawn (4:30 AM) to slay Dodo Wyvern. Once slayed all wild Zombie Wyverns already spawned on the map will be claimable (including the 4 high levels if still alive).
+You have time until dawn (5:30 AM) to slay Dodo Wyvern. Once slayed all wild Zombie Wyverns already spawned on the map will be claimable (including the 4 high levels if still alive).
 At 4:30 Dodo Wyvern will flee away until next middnight.
 
 # HOW to make it work
