@@ -64,6 +64,11 @@ void debugLog( const std::string& info )
     }
 }
 
+//void debugLog( const std::wstring& info )
+//{
+//    debugLog(ArkApi::Tools::Utf8Encode( info ) );
+//}
+
 enum class ZombieType : std::uint8_t
 {
     Fire,
@@ -553,10 +558,10 @@ void ReadConfig()
     // Try to read custom event messages.
     try
     {
-        nightMessage = config["NightMessage"].dump().c_str();
-        midnightMessage = config["MidnightMessage"].dump().c_str();
-        victorMessage = config["VictoryMessage"].dump().c_str();
-        defeatMessage = config["DefeatMessage"].dump().c_str();
+        nightMessage = ArkApi::Tools::Utf8Decode( config["NightMessage"]).c_str();
+        midnightMessage = ArkApi::Tools::Utf8Decode(config["MidnightMessage"]).c_str();
+        victorMessage = ArkApi::Tools::Utf8Decode(config["VictoryMessage"]).c_str();
+        defeatMessage = ArkApi::Tools::Utf8Decode(config["DefeatMessage"]).c_str();
     }
     catch( const std::exception& )
     {
