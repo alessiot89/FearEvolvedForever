@@ -153,7 +153,7 @@ void pickSpawn( FVector*& position,
 {
     auto randomIndex = getRandomValue( spawnCoords.Num() );
     // BEGIN Test spawn points
-    //if( spawnPointIndex == 30 )
+    //if( spawnPointIndex >= spawnCoords.Num() )
     //{
     //    spawnPointIndex = 0;
     //}
