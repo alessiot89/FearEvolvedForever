@@ -144,7 +144,7 @@ T getRandomValue( T minValue,
 template<typename T>
 T getRandomValue( T outerLimit )
 {
-    return getRandomValue( static_cast<T>( 0 ),
+    return getRandomValue( static_cast<T>( 1 ),
                            outerLimit );
 }
 
