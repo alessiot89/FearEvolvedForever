@@ -144,7 +144,7 @@ T getRandomValue( T minValue,
 template<typename T>
 T getRandomValue( T outerLimit )
 {
-    return getRandomValue( static_cast<T>( 1 ),
+    return getRandomValue( static_cast<T>( 0 ),
                            outerLimit );
 }
 
@@ -264,7 +264,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
                                                            *location,
                                                            *rotation,
                                                            difficulty,
-                                                           getRandomValue( 39 ),
+                                                           getRandomValue( 1, 39 ),
                                                            false,
                                                            true,
                                                            0,
@@ -306,7 +306,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
         packOffset( *location,
                     packIndex );
         TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
-        int level = getRandomValue( 39 );
+        int level = getRandomValue( 1, 39 );
         // Zombie Pack guard will be high level spawns, ie over max wild value (default for Wyverns is difficulty * 38)
         level += 38;
         zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
