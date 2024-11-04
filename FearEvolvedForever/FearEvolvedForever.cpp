@@ -303,7 +303,8 @@ APrimalDinoCharacter* spwanDodoWyvern()
             debugLog( "WARNING: Cannot load Zombie Wyvern being " + zombieBP.ToString() );
             return nullptr;
         }
-        packOffset( *location,
+        FVector zombieLocation = *location;
+        packOffset( zombieLocation,
                     packIndex );
         TSubclassOf<APrimalDinoCharacter> subclass( zombieClass );
         int level = getRandomValue( 1, 39 );
@@ -311,7 +312,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
         level += 38;
         zombiePack[packIndex] = APrimalDinoCharacter::SpawnDino( ArkApi::GetApiUtils().GetWorld(),
                                                                  subclass,
-                                                                 *location,
+                                                                 zombieLocation,
                                                                  *rotation,
                                                                  difficulty,
                                                                  level,
