@@ -230,13 +230,13 @@ void packOffset( FVector& location,
         break;
     case 2:
         location.X += offset;
-        location.Y += offset;
-        location.Z -= offset;
+        location.Y -= offset;
+        location.Z += offset;
         break;
     case 3:
         location.X -= offset;
-        location.Y += offset;
-        location.Z -= offset;
+        location.Y -= offset;
+        location.Z += offset;
         break;
     default:
         debugLog( "WARNING: invalid pack index on pack offset computation! Index was: " + std::to_string( packIndex ) );
