@@ -329,7 +329,7 @@ APrimalDinoCharacter* spwanDodoWyvern()
             dodoWyvernChar->BeginPlay();
             return dodoWyvernChar;
         }
-        debugLog( "INFO: spawned a Zombie Wyvern of the above type with level " + std::to_string( level * 5 ) );
+        debugLog( "INFO: spawned a Zombie Wyvern of the above type with level " + std::to_string( static_cast<int>( level * difficulty ) ) );
         zombiePack[packIndex]->BeginPlay();
         paintZombie( zombiePack[packIndex] );
     }
@@ -567,10 +567,10 @@ void ReadConfig()
     // Try to read custom event messages.
     try
     {
-        nightMessage = ArkApi::Tools::Utf8Decode( config["NightMessage"]).c_str();
-        midnightMessage = ArkApi::Tools::Utf8Decode(config["MidnightMessage"]).c_str();
-        victorMessage = ArkApi::Tools::Utf8Decode(config["VictoryMessage"]).c_str();
-        defeatMessage = ArkApi::Tools::Utf8Decode(config["DefeatMessage"]).c_str();
+        nightMessage = ArkApi::Tools::Utf8Decode( config["NightMessage"] ).c_str();
+        midnightMessage = ArkApi::Tools::Utf8Decode( config["MidnightMessage"] ).c_str();
+        victorMessage = ArkApi::Tools::Utf8Decode( config["VictoryMessage"] ).c_str();
+        defeatMessage = ArkApi::Tools::Utf8Decode( config["DefeatMessage"] ).c_str();
     }
     catch( const std::exception& )
     {
