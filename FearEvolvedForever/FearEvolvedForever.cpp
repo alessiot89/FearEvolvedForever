@@ -184,7 +184,7 @@ void paintZombie( APrimalDinoCharacter* zombie )
     paintingSpecialChanceLimit += paintingChanceLimit;
     constexpr int colorRegionsCount = 6;
     // Zombie painting chance: [0, paintingChanceLimit]
-    // Zomie special painting chance: [paintingChanceLimit+1, paintingSpecialChanceLimit]
+    // Zombie special painting chance: [paintingChanceLimit+1, paintingSpecialChanceLimit]
     // No painting: (paintingSpecialChanceLimit, bigEnough]
     if( extraction <= paintingChanceLimit )
     {
