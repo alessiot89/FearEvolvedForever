@@ -245,7 +245,7 @@ void packOffset( FVector& location,
 }
 
 // Spawns Dodo Wyvern and 4 high level Zombie Wyvern pack guard with random difficulty and colors according to config.
-APrimalDinoCharacter* spwanDodoWyvern()
+APrimalDinoCharacter* spawnDodoWyvern()
 {
     // Spawn Dodo Wyvern.
     FString dodoWyvernBPPath{ dodoWyvernBP };
@@ -388,7 +388,7 @@ void hook_AShooterGameState_Tick( AShooterGameState* gameState,
             if( false == isEventStarted )
             {
                 debugLog( "INFO: Time " + dbgTimeStr + ", try to spawn Dodo Wyvern.." );
-                dodoWyvern = spwanDodoWyvern();
+                dodoWyvern = spawnDodoWyvern();
                 isEventStarted = true;
                 isEventEnded = false;
                 ArkApi::GetApiUtils().SendNotificationToAll( displayColor,
