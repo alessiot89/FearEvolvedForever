@@ -11,7 +11,7 @@ In the Config.json file it is possible to customize some settings such difficult
 Dodo Wyvern assets is still present in game files of Scorched Earth map but they not loaded and referenced in-game. This means at first it may fail to spawn properly (unless you tell me how to hack the dino assets reference table).
 The only workaround that will make the plugin to make it work correctly is the follow:
 1. Start the server with the plugin,
-2. Wait or force (use cheat SetTimeOfDay) the midnight: a Dodo Wyvern will attempt to spawn. If the spawn doesn't happen properly it will be invisible and not in play-state, so follow the next steps:
+2. Wait or force (use cheat SetTimeOfDay) the midnight: a Dodo Wyvern will attempt to spawn. If the spawn happens properly you are done, the plugin is running correctly. However, if the spawn doesn't happen properly than it will be invisible and not in play-state, so follow the next steps:
 3. Immediately save the game and restart the server,
 4. For now on, Dodo Wyvern and its additional pack should correctly spawn at every mid-night as expected.
 
