@@ -26,7 +26,7 @@ Themed dinos, candy supply drops, meteor shower, boss moon, decorations and the 
 For Dodorex fight, a similar code-logic as this plugin could be used for recreating the fight in The Island Map.
 For themed dinos, it is possible to add them patching the GlobalNPCRandomSpawnClassWeights in APrimalWorldSettings::PreGameplaySetup() (please note Gen2 may not like this), however I did not found a proper way to make Dinosaur Bones (they will be deleted at server resetart) as well decorations, meteor shower, boss moon and Candy supply drops to work properly as well to use such items for crafting.
 
-Colours still works enabling the event, as well crafting recipes are exposed, however since they require non-referenced itmes (Dinosaur Bone etc..) they aren't working in the right way by default settings.
+Colours still work enabling the event, as well crafting recipes are exposed, however since they require non-referenced itmes (Dinosaur Bone etc..) they aren't working in the right way by default settings. Recipes overrides are needed to make them working properly.
 
 Recipes can be overridden to use other items, as example you could use Cooked Prime Meat:
 ```
