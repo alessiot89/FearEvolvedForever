@@ -8,7 +8,7 @@ You have time until dawn (5:15 AM) to slay Dodo Wyvern. Once slayed all wild Zom
 
 At 5:30 Dodo Wyvern will flee away until next middnight.
 
-In the Config.json file it is possible to customize some settings such difficulty, Zombie Pack color chances, two custom color sets, announcement message texts, toggle the debug log and finally change the possible spawn locations of the Dodo Wyvern.
+In the Config.json file it is possible to customize some settings such difficulty, Zombie Pack colour chances, two custom colour sets, announcement message texts, toggle the debug log and finally change the possible spawn locations of the Dodo Wyvern.
 
 ## Add extra Zombie Wyverns on the map
 You can add more Zombie Wyvern to claim (mostly around the trench area) overriding the spawn entries container (in Game.ini) as follow:
@@ -24,9 +24,9 @@ Please note that randomly forcing timings with console admin commands in an illo
 Themed dinos, candy supply drops, meteor shower, boss moon, decorations and the island DodoRex aren't working on PC version of ASE.
 
 For Dodorex fight, a similar code-logic as this plugin could be used for recreating the fight in The Island Map.
-For themed dinos, it is possible to add them patching the GlobalNPCRandomSpawnClassWeights in APrimalWorldSettings::PreGameplaySetup(), however I did not found a proper way to make Dinosaur Bones (they will be deleted at server resetart) as well decorations, meteor shower, boss moon and Candy supply drops to work properly as well to use such idems for crafting.
+For themed dinos, it is possible to add them patching the GlobalNPCRandomSpawnClassWeights in APrimalWorldSettings::PreGameplaySetup(), however I did not found a proper way to make Dinosaur Bones (they will be deleted at server resetart) as well decorations, meteor shower, boss moon and Candy supply drops to work properly as well to use such items for crafting.
 
-Colors still works enabling the event, as well crafting recipes are exposed, however since they require non-referenced itmes (Dinosaur Bone etc..) they aren't working in the right way by default settings.
+Colours still works enabling the event, as well crafting recipes are exposed, however since they require non-referenced itmes (Dinosaur Bone etc..) they aren't working in the right way by default settings.
 
 Recipes can be overridden to use other items, as example you could use Cooked Prime Meat:
 ```
