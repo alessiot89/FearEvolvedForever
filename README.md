@@ -19,8 +19,8 @@ Please note that randomly forcing timings with console admin commands in an illo
 
 ## What about the rest of event features?
 Themed dinos, candy supply drops, decorations and the island DodoRex aren't working on PC version of ASE.
-For Dodorex Fight, a similar code-logic as this plugin could be used for recreating the Fight in The Island Map.
-For themed dinos, it is possible to add them patching the GlobalNPCRandomSpawnClassWeights in APrimalWorldSettings::PreGameplaySetup(), however I did not found a proper way to make Dinosaur Bones (they will be deleted at server resetart) as well decorations and Candy supply drops to work properly as well to use such idems for crafting.
+For Dodorex fight, a similar code-logic as this plugin could be used for recreating the fight in The Island Map.
+For themed dinos, it is possible to add them patching the GlobalNPCRandomSpawnClassWeights in APrimalWorldSettings::PreGameplaySetup(), however I did not found a proper way to make Dinosaur Bones (they will be deleted at server resetart) as well decorations, meteor shower, boss moon and Candy supply drops to work properly as well to use such idems for crafting.
 Colors still works enabling the event, as well crafting recipes are exposed, however since they require non-referenced itmes (Dinosaur Bone etc..) they aren't working in the right way by default settings.
 Recipes can be overridden to use other items, as example you could use Cooked Prime Meat:
 ```
